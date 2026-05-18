@@ -1,0 +1,150 @@
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\appsettings.Development.json
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\appsettings.json
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\ChallengerPetCenter - C#.staticwebassets.endpoints.json
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\ChallengerPetCenter - C#.exe
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\ChallengerPetCenter - C#.deps.json
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\ChallengerPetCenter - C#.runtimeconfig.json
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\ChallengerPetCenter - C#.pdb
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\Microsoft.OpenApi.dll
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.csproj.AssemblyReference.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\rpswa.dswa.cache.json
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.GeneratedMSBuildEditorConfig.editorconfig
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.AssemblyInfoInputs.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.AssemblyInfo.cs
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.csproj.CoreCompileInputs.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.MvcApplicationPartsAssemblyInfo.cs
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.MvcApplicationPartsAssemblyInfo.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\rjimswa.dswa.cache.json
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\scopedcss\bundle\ChallengerPetCenter - C#.styles.css
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\staticwebassets.build.json
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\staticwebassets.build.json.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\staticwebassets.development.json
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\staticwebassets.build.endpoints.json
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\swae.build.ex.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\Challeng.F7F4DD44.Up2Date
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\refint\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.pdb
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ChallengerPetCenter - C#.genruntimeconfig.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net10.0\ref\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+F:\ChallengerPetCenter - C#\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\appsettings.Development.json
+F:\ChallengerPetCenter\bin\Debug\net10.0\ChallengerPetCenter - C#.staticwebassets.endpoints.json
+F:\ChallengerPetCenter\bin\Debug\net10.0\appsettings.json
+F:\ChallengerPetCenter\bin\Debug\net10.0\ChallengerPetCenter - C#.exe
+F:\ChallengerPetCenter\bin\Debug\net10.0\ChallengerPetCenter - C#.deps.json
+F:\ChallengerPetCenter\bin\Debug\net10.0\ChallengerPetCenter - C#.runtimeconfig.json
+F:\ChallengerPetCenter\bin\Debug\net10.0\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ChallengerPetCenter - C#.pdb
+F:\ChallengerPetCenter\bin\Debug\net10.0\Humanizer.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.Bcl.AsyncInterfaces.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.CodeAnalysis.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.CodeAnalysis.CSharp.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.CodeAnalysis.Workspaces.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Abstractions.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Design.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.EntityFrameworkCore.Relational.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.Extensions.DependencyModel.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Microsoft.OpenApi.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Mono.TextTemplating.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Oracle.EntityFrameworkCore.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Oracle.ManagedDataAccess.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.CodeDom.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.Composition.AttributedModel.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.Composition.Convention.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.Composition.Hosting.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.Composition.Runtime.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.Composition.TypedParts.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.Configuration.ConfigurationManager.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.Diagnostics.PerformanceCounter.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.DirectoryServices.Protocols.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\System.Security.Cryptography.ProtectedData.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\cs\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\de\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\es\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\fr\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\it\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ja\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ko\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\pl\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\pt-BR\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ru\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\tr\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\cs\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\de\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\es\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\fr\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\it\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ja\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ko\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\pl\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ru\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\tr\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\de\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\es\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\it\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\runtimes\win\lib\net8.0\System.Diagnostics.PerformanceCounter.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\runtimes\linux\lib\net8.0\System.DirectoryServices.Protocols.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\runtimes\osx\lib\net8.0\System.DirectoryServices.Protocols.dll
+F:\ChallengerPetCenter\bin\Debug\net10.0\runtimes\win\lib\net8.0\System.DirectoryServices.Protocols.dll
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.csproj.AssemblyReference.cache
+F:\ChallengerPetCenter\obj\Debug\net10.0\rpswa.dswa.cache.json
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.GeneratedMSBuildEditorConfig.editorconfig
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.AssemblyInfoInputs.cache
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.AssemblyInfo.cs
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.csproj.CoreCompileInputs.cache
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.MvcApplicationPartsAssemblyInfo.cs
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.MvcApplicationPartsAssemblyInfo.cache
+F:\ChallengerPetCenter\obj\Debug\net10.0\rjimswa.dswa.cache.json
+F:\ChallengerPetCenter\obj\Debug\net10.0\rjsmrazor.dswa.cache.json
+F:\ChallengerPetCenter\obj\Debug\net10.0\rjsmcshtml.dswa.cache.json
+F:\ChallengerPetCenter\obj\Debug\net10.0\scopedcss\bundle\ChallengerPetCenter - C#.styles.css
+F:\ChallengerPetCenter\obj\Debug\net10.0\staticwebassets.build.json
+F:\ChallengerPetCenter\obj\Debug\net10.0\staticwebassets.build.json.cache
+F:\ChallengerPetCenter\obj\Debug\net10.0\staticwebassets.development.json
+F:\ChallengerPetCenter\obj\Debug\net10.0\staticwebassets.build.endpoints.json
+F:\ChallengerPetCenter\obj\Debug\net10.0\swae.build.ex.cache
+F:\ChallengerPetCenter\obj\Debug\net10.0\Challeng.F7F4DD44.Up2Date
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter\obj\Debug\net10.0\refint\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.pdb
+F:\ChallengerPetCenter\obj\Debug\net10.0\ChallengerPetCenter - C#.genruntimeconfig.cache
+F:\ChallengerPetCenter\obj\Debug\net10.0\ref\ChallengerPetCenter - C#.dll

@@ -1,0 +1,35 @@
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\appsettings.Development.json
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\appsettings.json
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\ChallengerPetCenter - C#.staticwebassets.endpoints.json
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\ChallengerPetCenter - C#.exe
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\ChallengerPetCenter - C#.deps.json
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\ChallengerPetCenter - C#.runtimeconfig.json
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\ChallengerPetCenter - C#.pdb
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\Microsoft.OpenApi.dll
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+F:\ChallengerPetCenter - C#\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.csproj.AssemblyReference.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\rpswa.dswa.cache.json
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.GeneratedMSBuildEditorConfig.editorconfig
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.AssemblyInfoInputs.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.AssemblyInfo.cs
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.csproj.CoreCompileInputs.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.MvcApplicationPartsAssemblyInfo.cs
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.MvcApplicationPartsAssemblyInfo.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\rjimswa.dswa.cache.json
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\scopedcss\bundle\ChallengerPetCenter - C#.styles.css
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\staticwebassets.build.json
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\staticwebassets.build.json.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\staticwebassets.development.json
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\staticwebassets.build.endpoints.json
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\swae.build.ex.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\Challeng.F7F4DD44.Up2Date
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\refint\ChallengerPetCenter - C#.dll
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.pdb
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ChallengerPetCenter - C#.genruntimeconfig.cache
+F:\ChallengerPetCenter - C#\obj\Debug\net8.0\ref\ChallengerPetCenter - C#.dll

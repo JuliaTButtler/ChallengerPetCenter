@@ -1,0 +1,6 @@
+@ChallengerPetCenter___C__HostAddress = http://localhost:5032
+
+GET {{ChallengerPetCenter___C__HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
