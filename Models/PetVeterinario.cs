@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ChallengerPetCenter.Models
 {
     public class PetVeterinario
@@ -6,20 +8,18 @@ namespace ChallengerPetCenter.Models
 
         public DateTime DataInicio { get; set; } = DateTime.Now;
 
-        public bool Ativo { get; set; } = true;
+        public int Ativo { get; set; } = 1;
 
         public string? Observacoes { get; set; }
-
-        // FK
 
         public int PetId { get; set; }
 
         public int VeterinarioId { get; set; }
 
-        // Navegação
-
+        [JsonIgnore]
         public Pet Pet { get; set; } = null!;
 
+        [JsonIgnore]
         public Veterinario Veterinario { get; set; } = null!;
     }
 }

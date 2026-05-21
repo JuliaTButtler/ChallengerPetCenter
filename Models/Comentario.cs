@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ChallengerPetCenter.Models
 {
     public class Comentario
@@ -10,16 +12,14 @@ namespace ChallengerPetCenter.Models
 
         public DateTime? EditadoEm { get; set; }
 
-        // FK
-
         public int DiarioEntradaId { get; set; }
 
         public int UserId { get; set; }
 
-        // Navegação
-
+        [JsonIgnore]
         public DiarioEntrada DiarioEntrada { get; set; } = null!;
 
+        [JsonIgnore]
         public User User { get; set; } = null!;
     }
 }

@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ChallengerPetCenter.Models
 {
     public class Veterinario
@@ -10,16 +12,15 @@ namespace ChallengerPetCenter.Models
 
         public string? Descricao { get; set; }
 
-        // FK
-
         public int UserId { get; set; }
 
-        // Navegação
-
+        [JsonIgnore]
         public User User { get; set; } = null!;
 
+        [JsonIgnore]
         public List<PetVeterinario> PetVeterinarios { get; set; } = new();
 
+        [JsonIgnore]
         public List<Solicitacao> Solicitacoes { get; set; } = new();
     }
 }

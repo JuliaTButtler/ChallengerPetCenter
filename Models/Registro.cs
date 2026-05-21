@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ChallengerPetCenter.Models
 {
     public class Registro
@@ -18,12 +20,9 @@ namespace ChallengerPetCenter.Models
 
         public DateTime? AtualizadoEm { get; set; }
 
-        // FK
-
         public int DiarioEntradaId { get; set; }
 
-        // Navegação
-
+        [JsonIgnore]
         public DiarioEntrada DiarioEntrada { get; set; } = null!;
     }
 }

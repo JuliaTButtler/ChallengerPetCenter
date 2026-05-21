@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ChallengerPetCenter.Models
 {
     public class User
@@ -14,7 +16,7 @@ namespace ChallengerPetCenter.Models
 
         public string TipoUsuario { get; set; } = string.Empty;
 
-        public bool Ativo { get; set; } = true;
+        public int Ativo { get; set; } = 1;
 
         public DateTime? UltimoLogin { get; set; }
 
@@ -22,12 +24,16 @@ namespace ChallengerPetCenter.Models
 
         // Relacionamentos
 
+        [JsonIgnore]
         public List<Pet> Pets { get; set; } = new();
 
+        [JsonIgnore]
         public List<Comentario> Comentarios { get; set; } = new();
 
+        [JsonIgnore]
         public List<Solicitacao> Solicitacoes { get; set; } = new();
 
+        [JsonIgnore]
         public Veterinario? Veterinario { get; set; }
     }
 }

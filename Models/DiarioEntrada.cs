@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace ChallengerPetCenter.Models
 {
     public class DiarioEntrada
@@ -16,16 +18,15 @@ namespace ChallengerPetCenter.Models
 
         public string? Status { get; set; }
 
-        // FK
-
         public int PetId { get; set; }
 
-        // Navegação
-
+        [JsonIgnore]
         public Pet Pet { get; set; } = null!;
 
+        [JsonIgnore]
         public List<Registro> Registros { get; set; } = new();
 
+        [JsonIgnore]
         public List<Comentario> Comentarios { get; set; } = new();
     }
 }

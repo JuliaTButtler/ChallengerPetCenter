@@ -53,13 +53,11 @@ namespace ChallengerPetCenter.Data
             modelBuilder.Entity<Solicitacao>().ToTable("petdiary_solicitacoes");
 
             // User
-
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
-                .IsUnique();
+               .HasIndex(u => u.Email)
+               .IsUnique();
 
             // Veterinario -> User
-
             modelBuilder.Entity<Veterinario>()
                 .HasOne(v => v.User)
                 .WithOne(u => u.Veterinario)
@@ -80,6 +78,9 @@ namespace ChallengerPetCenter.Data
                 .HasForeignKey(d => d.PetId);
 
             // Registro -> DiarioEntrada
+            modelBuilder.Entity<Registro>()
+                .Property(r => r.Valor)
+                .HasPrecision(10, 2);
 
             modelBuilder.Entity<Registro>()
                 .HasOne(r => r.DiarioEntrada)
