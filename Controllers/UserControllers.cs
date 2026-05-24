@@ -7,6 +7,7 @@ namespace ChallengerPetCenter.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Produces("application/json")]
     public class UsersController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -21,7 +22,14 @@ namespace ChallengerPetCenter.Controllers
         // Lista todos os usuários
         // =====================================================
 
+        /// <summary>
+        /// Lista todos os usuários cadastrados.
+        /// </summary>
+        /// <returns>Lista de usuários.</returns>
+        /// <response code="200">Usuários encontrados com sucesso.</response>
+
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
             var users = await _context.Users
@@ -35,7 +43,17 @@ namespace ChallengerPetCenter.Controllers
         // Buscar usuário por ID
         // =====================================================
 
+        /// <summary>
+        /// Busca um usuário pelo ID.
+        /// </summary>
+        /// <param name="id">ID do usuário.</param>
+        /// <returns>Usuário encontrado.</returns>
+        /// <response code="200">Usuário encontrado.</response>
+        /// <response code="404">Usuário não encontrado.</response>
+
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<User>> GetUserById(int id)
         {
             var user = await _context.Users
@@ -54,7 +72,17 @@ namespace ChallengerPetCenter.Controllers
         // Buscar usuário por email
         // =====================================================
 
+        /// <summary>
+        /// Busca um usuário pelo email.
+        /// </summary>
+        /// <param name="email">Email do usuário.</param>
+        /// <returns>Usuário encontrado.</returns>
+        /// <response code="200">Usuário encontrado.</response>
+        /// <response code="404">Usuário não encontrado.</response>
+
         [HttpGet("email/{email}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<User>> GetUserByEmail(string email)
         {
             var user = await _context.Users
@@ -73,11 +101,23 @@ namespace ChallengerPetCenter.Controllers
         // Buscar usuários por tipo
         // =====================================================
 
+        /// <summary>
+        /// Busca usuários pelo tipo.
+        /// </summary>
+        /// <param name="tipo">Tipo do usuário (TUTOR ou VETERINARIO).</param>
+        /// <returns>Lista de usuários.</returns>
+        /// <response code="200">Usuários encontrados.</response>
+        /// <response code="404">Nenhum usuário encontrado.</response>
+
         [HttpGet("tipo/{tipo}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<User>>> GetUsersByTipo(string tipo)
         {
+            tipo = tipo.ToUpper();
+
             var users = await _context.Users
-                .Where(u => u.TipoUsuario == tipo)
+                .Where(u => u.TipoUsuario.ToUpper() == tipo)
                 .ToListAsync();
 
             if (!users.Any())
@@ -93,48 +133,71 @@ namespace ChallengerPetCenter.Controllers
         // Criar usuário
         // =====================================================
 
+        /// <summary>
+        /// Cria um novo usuário.
+        /// </summary>
+        /// <param name="user">Dados do usuário.</param>
+        /// <returns>Usuário criado.</returns>
+        /// <response code="201">Usuário criado com sucesso.</response>
+        /// <response code="400">Dados inválidos.</response>
+
         [HttpPost]
-public async Task<ActionResult<User>> CreateUser(User user)
-{
-    // Validação simples
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<User>> CreateUser(User user)
+        {
+            // Validação simples
 
-    if (string.IsNullOrWhiteSpace(user.Nome))
-    {
-        return BadRequest("Nome é obrigatório.");
-    }
+            if (string.IsNullOrWhiteSpace(user.Nome))
+            {
+                return BadRequest("Nome é obrigatório.");
+            }
 
-    if (string.IsNullOrWhiteSpace(user.Email))
-    {
-        return BadRequest("Email é obrigatório.");
-    }
+            if (string.IsNullOrWhiteSpace(user.Email))
+            {
+                return BadRequest("Email é obrigatório.");
+            }
 
-    // Verificar email duplicado
+            // Verificar email duplicado
 
-    var count = await _context.Users
-        .CountAsync(u => u.Email == user.Email);
+            var count = await _context.Users
+                .CountAsync(u => u.Email == user.Email);
 
-    if (count > 0)
-    {
-        return BadRequest("Email já cadastrado.");
-    }
+            if (count > 0)
+            {
+                return BadRequest("Email já cadastrado.");
+            }
 
-    _context.Users.Add(user);
+            _context.Users.Add(user);
 
-    await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
-    return CreatedAtAction(
-        nameof(GetUserById),
-        new { id = user.Id },
-        user
-    );
-}
+            return CreatedAtAction(
+                nameof(GetUserById),
+                new { id = user.Id },
+                user
+            );
+        }
 
         // =====================================================
         // PUT: api/users/1
         // Atualizar usuário
         // =====================================================
 
+        /// <summary>
+        /// Atualiza um usuário existente.
+        /// </summary>
+        /// <param name="id">ID do usuário.</param>
+        /// <param name="updatedUser">Dados atualizados.</param>
+        /// <returns>Sem conteúdo.</returns>
+        /// <response code="204">Usuário atualizado com sucesso.</response>
+        /// <response code="400">Dados inválidos.</response>
+        /// <response code="404">Usuário não encontrado.</response>
+
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateUser(int id, User updatedUser)
         {
             if (id != updatedUser.Id)
@@ -168,7 +231,17 @@ public async Task<ActionResult<User>> CreateUser(User user)
         // Remover usuário
         // =====================================================
 
+        /// <summary>
+        /// Remove um usuário.
+        /// </summary>
+        /// <param name="id">ID do usuário.</param>
+        /// <returns>Sem conteúdo.</returns>
+        /// <response code="204">Usuário removido com sucesso.</response>
+        /// <response code="404">Usuário não encontrado.</response>
+
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var user = await _context.Users

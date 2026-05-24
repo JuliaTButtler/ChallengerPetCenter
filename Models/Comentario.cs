@@ -17,9 +17,9 @@ namespace ChallengerPetCenter.Models
         public int UserId { get; set; }
 
         [JsonIgnore]
-        public DiarioEntrada DiarioEntrada { get; set; } = null!;
+        public DiarioEntrada? DiarioEntrada { get; set; }
 
         [JsonIgnore]
-        public User User { get; set; } = null!;
+        public User? User { get; set; }
     }
 }

@@ -17,9 +17,9 @@ namespace ChallengerPetCenter.Models
         public int VeterinarioId { get; set; }
 
         [JsonIgnore]
-        public Pet Pet { get; set; } = null!;
+        public Pet? Pet { get; set; }
 
         [JsonIgnore]
-        public Veterinario Veterinario { get; set; } = null!;
+        public Veterinario? Veterinario { get; set; }
     }
 }

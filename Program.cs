@@ -1,6 +1,8 @@
 using ChallengerPetCenter.Data;
 using Microsoft.EntityFrameworkCore;
 
+using System.Reflection;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
@@ -8,7 +10,14 @@ builder.Services.AddControllers();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+
+    options.IncludeXmlComments(
+        Path.Combine(AppContext.BaseDirectory, xmlFilename)
+    );
+});
 
 // DbContext Oracle
 builder.Services.AddDbContext<AppDbContext>(options =>
