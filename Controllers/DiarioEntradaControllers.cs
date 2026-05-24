@@ -17,10 +17,8 @@ namespace ChallengerPetCenter.Controllers
             _context = context;
         }
 
-        // =====================================================
         // GET: api/diarioentradas
         // Lista todas as entradas do diário
-        // =====================================================
 
         /// <summary>
         /// Lista todas as entradas do diário.
@@ -38,10 +36,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(entradas);
         }
 
-        // =====================================================
         // GET: api/diarioentradas/1
         // Buscar entrada por ID
-        // =====================================================
 
         /// <summary>
         /// Busca uma entrada pelo ID.
@@ -67,10 +63,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(entrada);
         }
 
-        // =====================================================
         // GET: api/diarioentradas/pet/1
         // Buscar entradas por pet
-        // =====================================================
 
         /// <summary>
         /// Busca entradas de um pet.
@@ -97,10 +91,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(entradas);
         }
 
-        // =====================================================
         // GET: api/diarioentradas/status/ATIVO
         // Buscar entradas por status
-        // =====================================================
 
         /// <summary>
         /// Busca entradas por status.
@@ -129,10 +121,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(entradas);
         }
 
-        // =====================================================
         // GET: api/diarioentradas/humor/FELIZ
         // Buscar entradas por humor
-        // =====================================================
 
         /// <summary>
         /// Busca entradas por humor geral.
@@ -161,10 +151,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(entradas);
         }
 
-        // =====================================================
         // POST: api/diarioentradas
         // Criar entrada
-        // =====================================================
 
         /// <summary>
         /// Cria uma nova entrada no diário.
@@ -208,10 +196,8 @@ namespace ChallengerPetCenter.Controllers
             );
         }
 
-        // =====================================================
         // PUT: api/diarioentradas/1
         // Atualizar entrada
-        // =====================================================
 
         /// <summary>
         /// Atualiza uma entrada do diário.
@@ -253,10 +239,9 @@ namespace ChallengerPetCenter.Controllers
             return NoContent();
         }
 
-        // =====================================================
+
         // DELETE: api/diarioentradas/1
         // Remover entrada
-        // =====================================================
 
         /// <summary>
         /// Remove uma entrada do diário.

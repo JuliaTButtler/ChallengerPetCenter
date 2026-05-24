@@ -1,5 +1,6 @@
 # README — Challenger Pet Center API
 API de C# do projeto PetCenter para o Challenger2
+
 Integrantes: 
 
    Arthur dos Santos Cabral, 566515, 2TDSA
@@ -9,7 +10,7 @@ Integrantes:
    José Diogo da Silva Neves, 562341, 2TDSA 
 
    Júlia Tiziotto Buttler, 564975, 2TDSA 
-   
+
    Mariana Xavier Quispe, 566357, 2TDSA 
 
 # LINK DO REPOSITÓRIO: https://github.com/JuliaTButtler/ChallengerPetCenter.git
@@ -409,6 +410,16 @@ Os pacotes NuGet utilizados no projeto serão restaurados automaticamente ao abr
 ---
 
 # Configurar conexão com o banco Oracle
+O projeto já está configurado com as credenciais do banco Oracle utilizadas durante o desenvolvimento.
+
+Credenciais utilizadas:
+Login: RM564975
+Senha: 050607
+Local Host: oracle.fiap.com.br
+Porta: 1521
+Service: ORCL
+
+Caso queira usar outras credenciais, siga as instruções:
 
 No arquivo:
 
@@ -424,14 +435,13 @@ configure sua string de conexão Oracle:
 
 # Executar as migrations
 
-Abra o Package Manager Console no Visual Studio e execute:
+As tabelas e migrations já foram criadas previamente durante o desenvolvimento do projeto, portanto não é necessário executar as migrations novamente para utilização da aplicação.
 
-Update-Database
-
-Ou via terminal:
-
+Caso deseje recriar o banco manualmente, utilize:
 
 dotnet ef database update
+
+no terminal.
 
 ---
 

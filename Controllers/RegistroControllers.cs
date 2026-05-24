@@ -17,10 +17,8 @@ namespace ChallengerPetCenter.Controllers
             _context = context;
         }
 
-        // =====================================================
         // GET: api/registros
         // Lista todos os registros
-        // =====================================================
 
         /// <summary>
         /// Lista todos os registros cadastrados.
@@ -38,10 +36,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(registros);
         }
 
-        // =====================================================
         // GET: api/registros/1
         // Buscar registro por ID
-        // =====================================================
 
         /// <summary>
         /// Busca um registro pelo ID.
@@ -67,10 +63,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(registro);
         }
 
-        // =====================================================
         // GET: api/registros/diario/1
         // Buscar registros por entrada do diário
-        // =====================================================
 
         /// <summary>
         /// Busca registros de uma entrada do diário.
@@ -97,10 +91,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(registros);
         }
 
-        // =====================================================
         // GET: api/registros/tipo/alimentacao
         // Buscar registros por tipo
-        // =====================================================
 
         /// <summary>
         /// Busca registros por tipo.
@@ -128,10 +120,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(registros);
         }
 
-        // =====================================================
         // GET: api/registros/subtipo/racao
         // Buscar registros por subtipo
-        // =====================================================
 
         /// <summary>
         /// Busca registros por subtipo.
@@ -160,10 +150,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(registros);
         }
 
-        // =====================================================
         // POST: api/registros
         // Criar registro
-        // =====================================================
 
         /// <summary>
         /// Cria um novo registro.
@@ -206,10 +194,8 @@ namespace ChallengerPetCenter.Controllers
             );
         }
 
-        // =====================================================
         // PUT: api/registros/1
         // Atualizar registro
-        // =====================================================
 
         /// <summary>
         /// Atualiza um registro existente.
@@ -253,10 +239,8 @@ namespace ChallengerPetCenter.Controllers
             return NoContent();
         }
 
-        // =====================================================
         // DELETE: api/registros/1
         // Remover registro
-        // =====================================================
 
         /// <summary>
         /// Remove um registro.

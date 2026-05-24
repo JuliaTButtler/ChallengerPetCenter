@@ -16,10 +16,8 @@ namespace ChallengerPetCenter.Controllers
             _context = context;
         }
 
-        // =====================================================
         // GET: api/pets
         // Lista todos os pets
-        // =====================================================
 
         /// <summary>
         /// Lista todos os pets cadastrados.
@@ -37,10 +35,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(pets);
         }
 
-        // =====================================================
         // GET: api/pets/1
         // Buscar pet por ID
-        // =====================================================
 
         /// <summary>
         /// Busca um pet pelo ID.
@@ -66,10 +62,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(pet);
         }
 
-        // =====================================================
         // GET: api/pets/user/1
         // Buscar pets de um tutor
-        // =====================================================
 
         /// <summary>
         /// Busca todos os pets de um tutor.
@@ -96,10 +90,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(pets);
         }
 
-        // =====================================================
         // GET: api/pets/especie/cachorro
         // Buscar pets por espécie
-        // =====================================================
 
         /// <summary>
         /// Busca pets por espécie.
@@ -126,10 +118,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(pets);
         }
 
-        // =====================================================
         // GET: api/pets/nome/Bob
         // Buscar pets por nome
-        // =====================================================
 
         /// <summary>
         /// Busca pets pelo nome.
@@ -156,10 +146,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(pets);
         }
 
-        // =====================================================
         // POST: api/pets
         // Criar pet
-        // =====================================================
 
         /// <summary>
         /// Cria um novo pet.
@@ -203,10 +191,8 @@ namespace ChallengerPetCenter.Controllers
             );
         }
 
-        // =====================================================
         // PUT: api/pets/1
         // Atualizar pet
-        // =====================================================
 
         /// <summary>
         /// Atualiza os dados de um pet.
@@ -249,10 +235,8 @@ namespace ChallengerPetCenter.Controllers
             return NoContent();
         }
 
-        // =====================================================
         // DELETE: api/pets/1
         // Remover pet
-        // =====================================================
 
         /// <summary>
         /// Remove um pet.

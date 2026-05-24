@@ -17,10 +17,8 @@ namespace ChallengerPetCenter.Controllers
             _context = context;
         }
 
-        // =====================================================
         // GET: api/veterinarios
         // Lista todos os veterinários
-        // =====================================================
 
         /// <summary>
         /// Lista todos os veterinários cadastrados.
@@ -38,10 +36,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(veterinarios);
         }
 
-        // =====================================================
         // GET: api/veterinarios/1
         // Buscar veterinário por ID
-        // =====================================================
 
         /// <summary>
         /// Busca um veterinário pelo ID.
@@ -67,10 +63,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(veterinario);
         }
 
-        // =====================================================
         // GET: api/veterinarios/crmv/12345
         // Buscar veterinário por CRMV
-        // =====================================================
 
         /// <summary>
         /// Busca um veterinário pelo CRMV.
@@ -96,10 +90,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(veterinario);
         }
 
-        // =====================================================
         // GET: api/veterinarios/especialidade/cardiologia
         // Buscar veterinários por especialidade
-        // =====================================================
 
         /// <summary>
         /// Busca veterinários por especialidade.
@@ -130,10 +122,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(veterinarios);
         }
 
-        // =====================================================
         // GET: api/veterinarios/user/1
         // Buscar veterinário pelo UserId
-        // =====================================================
 
         /// <summary>
         /// Busca um veterinário pelo ID do usuário.
@@ -159,10 +149,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(veterinario);
         }
 
-        // =====================================================
         // POST: api/veterinarios
         // Criar veterinário
-        // =====================================================
 
         /// <summary>
         /// Cria um novo veterinário.
@@ -213,10 +201,8 @@ namespace ChallengerPetCenter.Controllers
             );
         }
 
-        // =====================================================
         // PUT: api/veterinarios/1
         // Atualizar veterinário
-        // =====================================================
 
         /// <summary>
         /// Atualiza um veterinário existente.
@@ -256,10 +242,8 @@ namespace ChallengerPetCenter.Controllers
             return NoContent();
         }
 
-        // =====================================================
         // DELETE: api/veterinarios/1
         // Remover veterinário
-        // =====================================================
 
         /// <summary>
         /// Remove um veterinário.

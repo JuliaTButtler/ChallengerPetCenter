@@ -17,10 +17,8 @@ namespace ChallengerPetCenter.Controllers
             _context = context;
         }
 
-        // =====================================================
         // GET: api/solicitacoes
         // Lista todas as solicitações
-        // =====================================================
 
         /// <summary>
         /// Lista todas as solicitações cadastradas.
@@ -38,10 +36,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(solicitacoes);
         }
 
-        // =====================================================
         // GET: api/solicitacoes/1
         // Buscar solicitação por ID
-        // =====================================================
 
         /// <summary>
         /// Busca uma solicitação pelo ID.
@@ -67,10 +63,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(solicitacao);
         }
 
-        // =====================================================
         // GET: api/solicitacoes/pet/1
         // Buscar solicitações de um pet
-        // =====================================================
 
         /// <summary>
         /// Busca solicitações de um pet.
@@ -97,10 +91,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(solicitacoes);
         }
 
-        // =====================================================
         // GET: api/solicitacoes/tutor/1
         // Buscar solicitações de um tutor
-        // =====================================================
 
         /// <summary>
         /// Busca solicitações de um tutor.
@@ -127,10 +119,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(solicitacoes);
         }
 
-        // =====================================================
         // GET: api/solicitacoes/veterinario/1
         // Buscar solicitações de um veterinário
-        // =====================================================
 
         /// <summary>
         /// Busca solicitações de um veterinário.
@@ -157,10 +147,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(solicitacoes);
         }
 
-        // =====================================================
         // GET: api/solicitacoes/status/PENDENTE
         // Buscar solicitações por status
-        // =====================================================
 
         /// <summary>
         /// Busca solicitações por status.
@@ -187,10 +175,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(solicitacoes);
         }
 
-        // =====================================================
         // POST: api/solicitacoes
         // Criar solicitação
-        // =====================================================
 
         /// <summary>
         /// Cria uma nova solicitação.
@@ -255,10 +241,8 @@ namespace ChallengerPetCenter.Controllers
             );
         }
 
-        // =====================================================
         // PUT: api/solicitacoes/1
         // Atualizar solicitação
-        // =====================================================
 
         /// <summary>
         /// Atualiza uma solicitação existente.
@@ -298,10 +282,8 @@ namespace ChallengerPetCenter.Controllers
             return NoContent();
         }
 
-        // =====================================================
         // DELETE: api/solicitacoes/1
         // Remover solicitação
-        // =====================================================
 
         /// <summary>
         /// Remove uma solicitação.

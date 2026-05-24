@@ -17,10 +17,8 @@ namespace ChallengerPetCenter.Controllers
             _context = context;
         }
 
-        // =====================================================
         // GET: api/petveterinarios
         // Lista todos os vínculos
-        // =====================================================
 
         /// <summary>
         /// Lista todos os vínculos entre pets e veterinários.
@@ -38,10 +36,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(petVeterinarios);
         }
 
-        // =====================================================
         // GET: api/petveterinarios/1
         // Buscar vínculo por ID
-        // =====================================================
 
         /// <summary>
         /// Busca um vínculo pelo ID.
@@ -67,10 +63,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(petVeterinario);
         }
 
-        // =====================================================
         // GET: api/petveterinarios/pet/1
         // Buscar vínculos por pet
-        // =====================================================
 
         /// <summary>
         /// Busca vínculos de um pet.
@@ -97,10 +91,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(petVeterinarios);
         }
 
-        // =====================================================
         // GET: api/petveterinarios/veterinario/1
         // Buscar vínculos por veterinário
-        // =====================================================
 
         /// <summary>
         /// Busca vínculos de um veterinário.
@@ -127,10 +119,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(petVeterinarios);
         }
 
-        // =====================================================
         // GET: api/petveterinarios/ativos
         // Buscar vínculos ativos
-        // =====================================================
 
         /// <summary>
         /// Busca vínculos ativos.
@@ -156,10 +146,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(petVeterinarios);
         }
 
-        // =====================================================
         // POST: api/petveterinarios
         // Criar vínculo
-        // =====================================================
 
         /// <summary>
         /// Cria um novo vínculo entre pet e veterinário.
@@ -221,10 +209,8 @@ namespace ChallengerPetCenter.Controllers
             );
         }
 
-        // =====================================================
         // PUT: api/petveterinarios/1
         // Atualizar vínculo
-        // =====================================================
 
         /// <summary>
         /// Atualiza um vínculo existente.
@@ -265,10 +251,8 @@ namespace ChallengerPetCenter.Controllers
             return NoContent();
         }
 
-        // =====================================================
         // DELETE: api/petveterinarios/1
         // Remover vínculo
-        // =====================================================
 
         /// <summary>
         /// Remove um vínculo.

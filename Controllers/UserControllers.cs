@@ -17,10 +17,8 @@ namespace ChallengerPetCenter.Controllers
             _context = context;
         }
 
-        // =====================================================
         // GET: api/users
         // Lista todos os usuários
-        // =====================================================
 
         /// <summary>
         /// Lista todos os usuários cadastrados.
@@ -38,10 +36,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(users);
         }
 
-        // =====================================================
         // GET: api/users/1
         // Buscar usuário por ID
-        // =====================================================
 
         /// <summary>
         /// Busca um usuário pelo ID.
@@ -67,10 +63,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(user);
         }
 
-        // =====================================================
         // GET: api/users/email/teste@email.com
         // Buscar usuário por email
-        // =====================================================
 
         /// <summary>
         /// Busca um usuário pelo email.
@@ -96,10 +90,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(user);
         }
 
-        // =====================================================
         // GET: api/users/tipo/TUTOR
         // Buscar usuários por tipo
-        // =====================================================
 
         /// <summary>
         /// Busca usuários pelo tipo.
@@ -128,10 +120,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(users);
         }
 
-        // =====================================================
         // POST: api/users
         // Criar usuário
-        // =====================================================
 
         /// <summary>
         /// Cria um novo usuário.
@@ -179,10 +169,8 @@ namespace ChallengerPetCenter.Controllers
             );
         }
 
-        // =====================================================
         // PUT: api/users/1
         // Atualizar usuário
-        // =====================================================
 
         /// <summary>
         /// Atualiza um usuário existente.
@@ -226,10 +214,8 @@ namespace ChallengerPetCenter.Controllers
             return NoContent();
         }
 
-        // =====================================================
         // DELETE: api/users/1
         // Remover usuário
-        // =====================================================
 
         /// <summary>
         /// Remove um usuário.

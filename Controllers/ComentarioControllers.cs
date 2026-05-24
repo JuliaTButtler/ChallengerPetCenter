@@ -17,10 +17,8 @@ namespace ChallengerPetCenter.Controllers
             _context = context;
         }
 
-        // =====================================================
         // GET: api/comentarios
         // Lista todos os comentários
-        // =====================================================
 
         /// <summary>
         /// Lista todos os comentários cadastrados.
@@ -38,10 +36,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(comentarios);
         }
 
-        // =====================================================
         // GET: api/comentarios/1
         // Buscar comentário por ID
-        // =====================================================
 
         /// <summary>
         /// Busca um comentário pelo ID.
@@ -67,10 +63,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(comentario);
         }
 
-        // =====================================================
         // GET: api/comentarios/diario/1
         // Buscar comentários de uma entrada do diário
-        // =====================================================
 
         /// <summary>
         /// Busca comentários de uma entrada do diário.
@@ -97,10 +91,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(comentarios);
         }
 
-        // =====================================================
         // GET: api/comentarios/user/1
         // Buscar comentários de um usuário
-        // =====================================================
 
         /// <summary>
         /// Busca comentários de um usuário.
@@ -127,10 +119,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(comentarios);
         }
 
-        // =====================================================
         // GET: api/comentarios/texto/teste
         // Buscar comentários por texto
-        // =====================================================
 
         /// <summary>
         /// Busca comentários pelo texto.
@@ -159,10 +149,8 @@ namespace ChallengerPetCenter.Controllers
             return Ok(comentarios);
         }
 
-        // =====================================================
         // POST: api/comentarios
         // Criar comentário
-        // =====================================================
 
         /// <summary>
         /// Cria um novo comentário.
@@ -216,10 +204,8 @@ namespace ChallengerPetCenter.Controllers
             );
         }
 
-        // =====================================================
         // PUT: api/comentarios/1
         // Atualizar comentário
-        // =====================================================
 
         /// <summary>
         /// Atualiza um comentário existente.
@@ -258,10 +244,8 @@ namespace ChallengerPetCenter.Controllers
             return NoContent();
         }
 
-        // =====================================================
         // DELETE: api/comentarios/1
         // Remover comentário
-        // =====================================================
 
         /// <summary>
         /// Remove um comentário.
