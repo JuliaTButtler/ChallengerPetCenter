@@ -1,11 +1,14 @@
 # README — Challenger Pet Center API
 API de C# do projeto PetCenter para o Challenger2
 Integrantes: 
+
    Arthur dos Santos Cabral, 566515, 2TDSA
    Bruno Martins Bettio, 564939, 2TDSA
    José Diogo da Silva Neves, 562341, 2TDSA 
    Júlia Tiziotto Buttler, 564975, 2TDSA 
    Mariana Xavier Quispe, 566357, 2TDSA 
+
+# LINK DO REPOSITÓRIO: https://github.com/JuliaTButtler/ChallengerPetCenter.git
 
 ## Descrição do Projeto
 
@@ -389,7 +392,7 @@ Antes de executar o projeto, é necessário possuir instalado:
 
 # Clonar o repositório
 
-git clone LINK_DO_REPOSITORIO
+git clone https://github.com/JuliaTButtler/ChallengerPetCenter.git
 
 ---
 
