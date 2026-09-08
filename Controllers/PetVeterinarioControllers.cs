@@ -1,7 +1,7 @@
-using ChallengerPetCenter.Data;
-using ChallengerPetCenter.Models;
+using ChallengerPetCenter.Common;
+using ChallengerPetCenter.DTOs.PetVeterinarios;
+using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ChallengerPetCenter.Controllers
 {
@@ -10,274 +10,137 @@ namespace ChallengerPetCenter.Controllers
     [Produces("application/json")]
     public class PetVeterinariosController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IPetVeterinarioService _petVeterinarioService;
 
-        public PetVeterinariosController(AppDbContext context)
+        public PetVeterinariosController(IPetVeterinarioService petVeterinarioService)
         {
-            _context = context;
+            _petVeterinarioService = petVeterinarioService;
         }
-
-        // GET: api/petveterinarios
-        // Lista todos os vínculos
 
         /// <summary>
         /// Lista todos os vínculos entre pets e veterinários.
         /// </summary>
-        /// <returns>Lista de vínculos.</returns>
-        /// <response code="200">Vínculos encontrados com sucesso.</response>
-
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<PetVeterinario>>> GetPetVeterinarios()
+        public async Task<ActionResult<IEnumerable<PetVeterinarioResponseDto>>> GetPetVeterinarios()
         {
-            var petVeterinarios = await _context.PetVeterinarios
-                .ToListAsync();
-
-            return Ok(petVeterinarios);
+            var items = await _petVeterinarioService.GetAllAsync();
+            return Ok(items);
         }
-
-        // GET: api/petveterinarios/1
-        // Buscar vínculo por ID
 
         /// <summary>
         /// Busca um vínculo pelo ID.
         /// </summary>
-        /// <param name="id">ID do vínculo.</param>
-        /// <returns>Vínculo encontrado.</returns>
-        /// <response code="200">Vínculo encontrado.</response>
-        /// <response code="404">Vínculo não encontrado.</response>
-
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PetVeterinario>> GetPetVeterinarioById(int id)
+        public async Task<ActionResult<PetVeterinarioResponseDto>> GetPetVeterinarioById(int id)
         {
-            var petVeterinario = await _context.PetVeterinarios
-                .FindAsync(id);
-
-            if (petVeterinario == null)
-            {
-                return NotFound("Vínculo não encontrado.");
-            }
-
-            return Ok(petVeterinario);
+            var result = await _petVeterinarioService.GetByIdAsync(id);
+            return ToActionResult(result);
         }
-
-        // GET: api/petveterinarios/pet/1
-        // Buscar vínculos por pet
 
         /// <summary>
         /// Busca vínculos de um pet.
         /// </summary>
-        /// <param name="petId">ID do pet.</param>
-        /// <returns>Lista de vínculos.</returns>
-        /// <response code="200">Vínculos encontrados.</response>
-        /// <response code="404">Nenhum vínculo encontrado.</response>
-
         [HttpGet("pet/{petId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<PetVeterinario>>> GetByPet(int petId)
+        public async Task<ActionResult<IEnumerable<PetVeterinarioResponseDto>>> GetByPet(int petId)
         {
-            var petVeterinarios = await _context.PetVeterinarios
-                .Where(pv => pv.PetId == petId)
-                .ToListAsync();
-
-            if (!petVeterinarios.Any())
-            {
+            var items = (await _petVeterinarioService.GetByPetAsync(petId)).ToList();
+            if (!items.Any())
                 return NotFound("Nenhum vínculo encontrado.");
-            }
 
-            return Ok(petVeterinarios);
+            return Ok(items);
         }
-
-        // GET: api/petveterinarios/veterinario/1
-        // Buscar vínculos por veterinário
 
         /// <summary>
         /// Busca vínculos de um veterinário.
         /// </summary>
-        /// <param name="veterinarioId">ID do veterinário.</param>
-        /// <returns>Lista de vínculos.</returns>
-        /// <response code="200">Vínculos encontrados.</response>
-        /// <response code="404">Nenhum vínculo encontrado.</response>
-
         [HttpGet("veterinario/{veterinarioId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<PetVeterinario>>> GetByVeterinario(int veterinarioId)
+        public async Task<ActionResult<IEnumerable<PetVeterinarioResponseDto>>> GetByVeterinario(int veterinarioId)
         {
-            var petVeterinarios = await _context.PetVeterinarios
-                .Where(pv => pv.VeterinarioId == veterinarioId)
-                .ToListAsync();
-
-            if (!petVeterinarios.Any())
-            {
+            var items = (await _petVeterinarioService.GetByVeterinarioAsync(veterinarioId)).ToList();
+            if (!items.Any())
                 return NotFound("Nenhum vínculo encontrado.");
-            }
 
-            return Ok(petVeterinarios);
+            return Ok(items);
         }
-
-        // GET: api/petveterinarios/ativos
-        // Buscar vínculos ativos
 
         /// <summary>
         /// Busca vínculos ativos.
         /// </summary>
-        /// <returns>Lista de vínculos ativos.</returns>
-        /// <response code="200">Vínculos encontrados.</response>
-        /// <response code="404">Nenhum vínculo encontrado.</response>
-
         [HttpGet("ativos")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<PetVeterinario>>> GetAtivos()
+        public async Task<ActionResult<IEnumerable<PetVeterinarioResponseDto>>> GetAtivos()
         {
-            var petVeterinarios = await _context.PetVeterinarios
-                .Where(pv => pv.Ativo == 1)
-                .ToListAsync();
-
-            if (!petVeterinarios.Any())
-            {
+            var items = (await _petVeterinarioService.GetAtivosAsync()).ToList();
+            if (!items.Any())
                 return NotFound("Nenhum vínculo ativo encontrado.");
-            }
 
-            return Ok(petVeterinarios);
+            return Ok(items);
         }
-
-        // POST: api/petveterinarios
-        // Criar vínculo
 
         /// <summary>
         /// Cria um novo vínculo entre pet e veterinário.
         /// </summary>
-        /// <param name="petVeterinario">Dados do vínculo.</param>
-        /// <returns>Vínculo criado.</returns>
-        /// <response code="201">Vínculo criado com sucesso.</response>
-        /// <response code="400">Dados inválidos.</response>
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PetVeterinario>> CreatePetVeterinario(PetVeterinario petVeterinario)
+        public async Task<ActionResult<PetVeterinarioResponseDto>> CreatePetVeterinario(CreatePetVeterinarioDto dto)
         {
-            petVeterinario.Pet = null;
-            petVeterinario.Veterinario = null;
-
-            // Verificar se pet existe
-
-            var petCount = await _context.Pets
-                .CountAsync(p => p.Id == petVeterinario.PetId);
-
-            if (petCount == 0)
-            {
-                return BadRequest("Pet não encontrado.");
-            }
-
-            // Verificar se veterinário existe
-
-            var veterinarioCount = await _context.Veterinarios
-                .CountAsync(v => v.Id == petVeterinario.VeterinarioId);
-
-            if (veterinarioCount == 0)
-            {
-                return BadRequest("Veterinário não encontrado.");
-            }
-
-            // Verificar vínculo duplicado
-
-            var vinculoCount = await _context.PetVeterinarios
-                .CountAsync(pv =>
-                    pv.PetId == petVeterinario.PetId &&
-                    pv.VeterinarioId == petVeterinario.VeterinarioId &&
-                    pv.Ativo == 1);
-
-            if (vinculoCount > 0)
-            {
-                return BadRequest("Já existe um vínculo ativo entre este pet e veterinário.");
-            }
-
-            _context.PetVeterinarios.Add(petVeterinario);
-
-            await _context.SaveChangesAsync();
+            var result = await _petVeterinarioService.CreateAsync(dto);
+            if (!result.Succeeded)
+                return BadRequest(result.Error);
 
             return CreatedAtAction(
                 nameof(GetPetVeterinarioById),
-                new { id = petVeterinario.Id },
-                petVeterinario
+                new { id = result.Data!.Id },
+                result.Data
             );
         }
-
-        // PUT: api/petveterinarios/1
-        // Atualizar vínculo
 
         /// <summary>
         /// Atualiza um vínculo existente.
         /// </summary>
-        /// <param name="id">ID do vínculo.</param>
-        /// <param name="updatedPetVeterinario">Dados atualizados.</param>
-        /// <returns>Sem conteúdo.</returns>
-        /// <response code="204">Vínculo atualizado com sucesso.</response>
-        /// <response code="400">Dados inválidos.</response>
-        /// <response code="404">Vínculo não encontrado.</response>
-
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdatePetVeterinario(
-            int id,
-            PetVeterinario updatedPetVeterinario)
+        public async Task<IActionResult> UpdatePetVeterinario(int id, UpdatePetVeterinarioDto dto)
         {
-            if (id != updatedPetVeterinario.Id)
-            {
-                return BadRequest("ID da rota diferente do ID enviado.");
-            }
-
-            var existingPetVeterinario = await _context.PetVeterinarios
-                .FindAsync(id);
-
-            if (existingPetVeterinario == null)
-            {
-                return NotFound("Vínculo não encontrado.");
-            }
-
-            existingPetVeterinario.Ativo = updatedPetVeterinario.Ativo;
-            existingPetVeterinario.Observacoes = updatedPetVeterinario.Observacoes;
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            var result = await _petVeterinarioService.UpdateAsync(id, dto);
+            return ToActionResult(result);
         }
-
-        // DELETE: api/petveterinarios/1
-        // Remover vínculo
 
         /// <summary>
         /// Remove um vínculo.
         /// </summary>
-        /// <param name="id">ID do vínculo.</param>
-        /// <returns>Sem conteúdo.</returns>
-        /// <response code="204">Vínculo removido com sucesso.</response>
-        /// <response code="404">Vínculo não encontrado.</response>
-
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeletePetVeterinario(int id)
         {
-            var petVeterinario = await _context.PetVeterinarios
-                .FindAsync(id);
+            var result = await _petVeterinarioService.DeleteAsync(id);
+            return ToActionResult(result);
+        }
 
-            if (petVeterinario == null)
-            {
-                return NotFound("Vínculo não encontrado.");
-            }
+        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
+        {
+            if (!result.Succeeded)
+                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
 
-            _context.PetVeterinarios.Remove(petVeterinario);
+            return Ok(result.Data);
+        }
 
-            await _context.SaveChangesAsync();
+        private IActionResult ToActionResult(ServiceResult result)
+        {
+            if (!result.Succeeded)
+                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
 
             return NoContent();
         }

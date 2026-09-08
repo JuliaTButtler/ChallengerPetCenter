@@ -1,7 +1,7 @@
-using ChallengerPetCenter.Data;
-using ChallengerPetCenter.Models;
+using ChallengerPetCenter.Common;
+using ChallengerPetCenter.DTOs.DiarioEntradas;
+using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ChallengerPetCenter.Controllers
 {
@@ -10,263 +10,137 @@ namespace ChallengerPetCenter.Controllers
     [Produces("application/json")]
     public class DiarioEntradasController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IDiarioEntradaService _diarioEntradaService;
 
-        public DiarioEntradasController(AppDbContext context)
+        public DiarioEntradasController(IDiarioEntradaService diarioEntradaService)
         {
-            _context = context;
+            _diarioEntradaService = diarioEntradaService;
         }
-
-        // GET: api/diarioentradas
-        // Lista todas as entradas do diário
 
         /// <summary>
         /// Lista todas as entradas do diário.
         /// </summary>
-        /// <returns>Lista de entradas.</returns>
-        /// <response code="200">Entradas encontradas com sucesso.</response>
-
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<DiarioEntrada>>> GetDiarioEntradas()
+        public async Task<ActionResult<IEnumerable<DiarioEntradaResponseDto>>> GetDiarioEntradas()
         {
-            var entradas = await _context.DiarioEntradas
-                .ToListAsync();
-
+            var entradas = await _diarioEntradaService.GetAllAsync();
             return Ok(entradas);
         }
-
-        // GET: api/diarioentradas/1
-        // Buscar entrada por ID
 
         /// <summary>
         /// Busca uma entrada pelo ID.
         /// </summary>
-        /// <param name="id">ID da entrada.</param>
-        /// <returns>Entrada encontrada.</returns>
-        /// <response code="200">Entrada encontrada.</response>
-        /// <response code="404">Entrada não encontrada.</response>
-
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DiarioEntrada>> GetDiarioEntradaById(int id)
+        public async Task<ActionResult<DiarioEntradaResponseDto>> GetDiarioEntradaById(int id)
         {
-            var entrada = await _context.DiarioEntradas
-                .FindAsync(id);
-
-            if (entrada == null)
-            {
-                return NotFound("Entrada não encontrada.");
-            }
-
-            return Ok(entrada);
+            var result = await _diarioEntradaService.GetByIdAsync(id);
+            return ToActionResult(result);
         }
-
-        // GET: api/diarioentradas/pet/1
-        // Buscar entradas por pet
 
         /// <summary>
         /// Busca entradas de um pet.
         /// </summary>
-        /// <param name="petId">ID do pet.</param>
-        /// <returns>Lista de entradas.</returns>
-        /// <response code="200">Entradas encontradas.</response>
-        /// <response code="404">Nenhuma entrada encontrada.</response>
-
         [HttpGet("pet/{petId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<DiarioEntrada>>> GetEntradasByPet(int petId)
+        public async Task<ActionResult<IEnumerable<DiarioEntradaResponseDto>>> GetEntradasByPet(int petId)
         {
-            var entradas = await _context.DiarioEntradas
-                .Where(d => d.PetId == petId)
-                .ToListAsync();
-
+            var entradas = (await _diarioEntradaService.GetByPetAsync(petId)).ToList();
             if (!entradas.Any())
-            {
                 return NotFound("Nenhuma entrada encontrada.");
-            }
 
             return Ok(entradas);
         }
-
-        // GET: api/diarioentradas/status/ATIVO
-        // Buscar entradas por status
 
         /// <summary>
         /// Busca entradas por status.
         /// </summary>
-        /// <param name="status">Status da entrada.</param>
-        /// <returns>Lista de entradas.</returns>
-        /// <response code="200">Entradas encontradas.</response>
-        /// <response code="404">Nenhuma entrada encontrada.</response>
-
         [HttpGet("status/{status}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<DiarioEntrada>>> GetEntradasByStatus(string status)
+        public async Task<ActionResult<IEnumerable<DiarioEntradaResponseDto>>> GetEntradasByStatus(string status)
         {
-            var entradas = await _context.DiarioEntradas
-                .Where(d =>
-                    d.Status != null &&
-                    d.Status.ToUpper() == status.ToUpper())
-                .ToListAsync();
-
+            var entradas = (await _diarioEntradaService.GetByStatusAsync(status)).ToList();
             if (!entradas.Any())
-            {
                 return NotFound("Nenhuma entrada encontrada.");
-            }
 
             return Ok(entradas);
         }
-
-        // GET: api/diarioentradas/humor/FELIZ
-        // Buscar entradas por humor
 
         /// <summary>
         /// Busca entradas por humor geral.
         /// </summary>
-        /// <param name="humor">Humor da entrada.</param>
-        /// <returns>Lista de entradas.</returns>
-        /// <response code="200">Entradas encontradas.</response>
-        /// <response code="404">Nenhuma entrada encontrada.</response>
-
         [HttpGet("humor/{humor}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<DiarioEntrada>>> GetEntradasByHumor(string humor)
+        public async Task<ActionResult<IEnumerable<DiarioEntradaResponseDto>>> GetEntradasByHumor(string humor)
         {
-            var entradas = await _context.DiarioEntradas
-                .Where(d =>
-                    d.HumorGeral != null &&
-                    d.HumorGeral.ToUpper() == humor.ToUpper())
-                .ToListAsync();
-
+            var entradas = (await _diarioEntradaService.GetByHumorAsync(humor)).ToList();
             if (!entradas.Any())
-            {
                 return NotFound("Nenhuma entrada encontrada.");
-            }
 
             return Ok(entradas);
         }
 
-        // POST: api/diarioentradas
-        // Criar entrada
-
         /// <summary>
         /// Cria uma nova entrada no diário.
         /// </summary>
-        /// <param name="entrada">Dados da entrada.</param>
-        /// <returns>Entrada criada.</returns>
-        /// <response code="201">Entrada criada com sucesso.</response>
-        /// <response code="400">Dados inválidos.</response>
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<DiarioEntrada>> CreateDiarioEntrada(DiarioEntrada entrada)
+        public async Task<ActionResult<DiarioEntradaResponseDto>> CreateDiarioEntrada(CreateDiarioEntradaDto dto)
         {
-            var petExists = await _context.Pets
-                .CountAsync(p => p.Id == entrada.PetId);
-
-            if (petExists == 0)
-            {
-                return BadRequest("Pet não encontrado.");
-            }
-
-            var entradaExiste = await _context.DiarioEntradas
-                .CountAsync(d =>
-                    d.PetId == entrada.PetId &&
-                    d.Data.Date == entrada.Data.Date);
-
-            if (entradaExiste > 0)
-            {
-                return BadRequest("Já existe uma entrada para este pet nesta data.");
-            }
-
-            _context.DiarioEntradas.Add(entrada);
-
-            await _context.SaveChangesAsync();
+            var result = await _diarioEntradaService.CreateAsync(dto);
+            if (!result.Succeeded)
+                return BadRequest(result.Error);
 
             return CreatedAtAction(
                 nameof(GetDiarioEntradaById),
-                new { id = entrada.Id },
-                entrada
+                new { id = result.Data!.Id },
+                result.Data
             );
         }
-
-        // PUT: api/diarioentradas/1
-        // Atualizar entrada
 
         /// <summary>
         /// Atualiza uma entrada do diário.
         /// </summary>
-        /// <param name="id">ID da entrada.</param>
-        /// <param name="updatedEntrada">Dados atualizados.</param>
-        /// <returns>Sem conteúdo.</returns>
-        /// <response code="204">Entrada atualizada com sucesso.</response>
-        /// <response code="400">Dados inválidos.</response>
-        /// <response code="404">Entrada não encontrada.</response>
-
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateDiarioEntrada(int id, DiarioEntrada updatedEntrada)
+        public async Task<IActionResult> UpdateDiarioEntrada(int id, UpdateDiarioEntradaDto dto)
         {
-            if (id != updatedEntrada.Id)
-            {
-                return BadRequest("ID da rota diferente do ID enviado.");
-            }
-
-            var existingEntrada = await _context.DiarioEntradas
-                .FindAsync(id);
-
-            if (existingEntrada == null)
-            {
-                return NotFound("Entrada não encontrada.");
-            }
-
-            existingEntrada.Data = updatedEntrada.Data;
-            existingEntrada.Resumo = updatedEntrada.Resumo;
-            existingEntrada.HumorGeral = updatedEntrada.HumorGeral;
-            existingEntrada.Status = updatedEntrada.Status;
-            existingEntrada.AtualizadoEm = DateTime.Now;
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            var result = await _diarioEntradaService.UpdateAsync(id, dto);
+            return ToActionResult(result);
         }
-
-
-        // DELETE: api/diarioentradas/1
-        // Remover entrada
 
         /// <summary>
         /// Remove uma entrada do diário.
         /// </summary>
-        /// <param name="id">ID da entrada.</param>
-        /// <returns>Sem conteúdo.</returns>
-        /// <response code="204">Entrada removida com sucesso.</response>
-        /// <response code="404">Entrada não encontrada.</response>
-
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteDiarioEntrada(int id)
         {
-            var entrada = await _context.DiarioEntradas
-                .FindAsync(id);
+            var result = await _diarioEntradaService.DeleteAsync(id);
+            return ToActionResult(result);
+        }
 
-            if (entrada == null)
-            {
-                return NotFound("Entrada não encontrada.");
-            }
+        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
+        {
+            if (!result.Succeeded)
+                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
 
-            _context.DiarioEntradas.Remove(entrada);
+            return Ok(result.Data);
+        }
 
-            await _context.SaveChangesAsync();
+        private IActionResult ToActionResult(ServiceResult result)
+        {
+            if (!result.Succeeded)
+                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
 
             return NoContent();
         }

@@ -1,4 +1,5 @@
 using ChallengerPetCenter.Data;
+using ChallengerPetCenter.Services;
 using Microsoft.EntityFrameworkCore;
 
 using System.Reflection;
@@ -7,6 +8,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
 builder.Services.AddControllers();
+
+// Services
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IPetService, PetService>();
+builder.Services.AddScoped<IVeterinarioService, VeterinarioService>();
+builder.Services.AddScoped<IPetVeterinarioService, PetVeterinarioService>();
+builder.Services.AddScoped<IDiarioEntradaService, DiarioEntradaService>();
+builder.Services.AddScoped<IRegistroService, RegistroService>();
+builder.Services.AddScoped<IComentarioService, ComentarioService>();
+builder.Services.AddScoped<ISolicitacaoService, SolicitacaoService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();

@@ -1,7 +1,7 @@
-using ChallengerPetCenter.Data;
-using ChallengerPetCenter.Models;
+using ChallengerPetCenter.Common;
+using ChallengerPetCenter.DTOs.Users;
+using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ChallengerPetCenter.Controllers
 {
@@ -10,237 +10,119 @@ namespace ChallengerPetCenter.Controllers
     [Produces("application/json")]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUserService _userService;
 
-        public UsersController(AppDbContext context)
+        public UsersController(IUserService userService)
         {
-            _context = context;
+            _userService = userService;
         }
-
-        // GET: api/users
-        // Lista todos os usuários
 
         /// <summary>
         /// Lista todos os usuários cadastrados.
         /// </summary>
-        /// <returns>Lista de usuários.</returns>
-        /// <response code="200">Usuários encontrados com sucesso.</response>
-
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetUsers()
         {
-            var users = await _context.Users
-                .ToListAsync();
-
+            var users = await _userService.GetAllAsync();
             return Ok(users);
         }
-
-        // GET: api/users/1
-        // Buscar usuário por ID
 
         /// <summary>
         /// Busca um usuário pelo ID.
         /// </summary>
-        /// <param name="id">ID do usuário.</param>
-        /// <returns>Usuário encontrado.</returns>
-        /// <response code="200">Usuário encontrado.</response>
-        /// <response code="404">Usuário não encontrado.</response>
-
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<User>> GetUserById(int id)
+        public async Task<ActionResult<UserResponseDto>> GetUserById(int id)
         {
-            var user = await _context.Users
-                .FindAsync(id);
-
-            if (user == null)
-            {
-                return NotFound("Usuário não encontrado.");
-            }
-
-            return Ok(user);
+            var result = await _userService.GetByIdAsync(id);
+            return ToActionResult(result);
         }
-
-        // GET: api/users/email/teste@email.com
-        // Buscar usuário por email
 
         /// <summary>
         /// Busca um usuário pelo email.
         /// </summary>
-        /// <param name="email">Email do usuário.</param>
-        /// <returns>Usuário encontrado.</returns>
-        /// <response code="200">Usuário encontrado.</response>
-        /// <response code="404">Usuário não encontrado.</response>
-
         [HttpGet("email/{email}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<User>> GetUserByEmail(string email)
+        public async Task<ActionResult<UserResponseDto>> GetUserByEmail(string email)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
-
-            if (user == null)
-            {
-                return NotFound("Usuário não encontrado.");
-            }
-
-            return Ok(user);
+            var result = await _userService.GetByEmailAsync(email);
+            return ToActionResult(result);
         }
-
-        // GET: api/users/tipo/TUTOR
-        // Buscar usuários por tipo
 
         /// <summary>
         /// Busca usuários pelo tipo.
         /// </summary>
-        /// <param name="tipo">Tipo do usuário (TUTOR ou VETERINARIO).</param>
-        /// <returns>Lista de usuários.</returns>
-        /// <response code="200">Usuários encontrados.</response>
-        /// <response code="404">Nenhum usuário encontrado.</response>
-
         [HttpGet("tipo/{tipo}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsersByTipo(string tipo)
+        public async Task<ActionResult<IEnumerable<UserResponseDto>>> GetUsersByTipo(string tipo)
         {
-            tipo = tipo.ToUpper();
-
-            var users = await _context.Users
-                .Where(u => u.TipoUsuario.ToUpper() == tipo)
-                .ToListAsync();
-
+            var users = (await _userService.GetByTipoAsync(tipo)).ToList();
             if (!users.Any())
-            {
                 return NotFound("Nenhum usuário encontrado.");
-            }
 
             return Ok(users);
         }
 
-        // POST: api/users
-        // Criar usuário
-
         /// <summary>
         /// Cria um novo usuário.
         /// </summary>
-        /// <param name="user">Dados do usuário.</param>
-        /// <returns>Usuário criado.</returns>
-        /// <response code="201">Usuário criado com sucesso.</response>
-        /// <response code="400">Dados inválidos.</response>
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        public async Task<ActionResult<UserResponseDto>> CreateUser(CreateUserDto dto)
         {
-            // Validação simples
-
-            if (string.IsNullOrWhiteSpace(user.Nome))
-            {
-                return BadRequest("Nome é obrigatório.");
-            }
-
-            if (string.IsNullOrWhiteSpace(user.Email))
-            {
-                return BadRequest("Email é obrigatório.");
-            }
-
-            // Verificar email duplicado
-
-            var count = await _context.Users
-                .CountAsync(u => u.Email == user.Email);
-
-            if (count > 0)
-            {
-                return BadRequest("Email já cadastrado.");
-            }
-
-            _context.Users.Add(user);
-
-            await _context.SaveChangesAsync();
+            var result = await _userService.CreateAsync(dto);
+            if (!result.Succeeded)
+                return BadRequest(result.Error);
 
             return CreatedAtAction(
                 nameof(GetUserById),
-                new { id = user.Id },
-                user
+                new { id = result.Data!.Id },
+                result.Data
             );
         }
-
-        // PUT: api/users/1
-        // Atualizar usuário
 
         /// <summary>
         /// Atualiza um usuário existente.
         /// </summary>
-        /// <param name="id">ID do usuário.</param>
-        /// <param name="updatedUser">Dados atualizados.</param>
-        /// <returns>Sem conteúdo.</returns>
-        /// <response code="204">Usuário atualizado com sucesso.</response>
-        /// <response code="400">Dados inválidos.</response>
-        /// <response code="404">Usuário não encontrado.</response>
-
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateUser(int id, User updatedUser)
+        public async Task<IActionResult> UpdateUser(int id, UpdateUserDto dto)
         {
-            if (id != updatedUser.Id)
-            {
-                return BadRequest("ID da rota diferente do ID enviado.");
-            }
-
-            var existingUser = await _context.Users
-                .FindAsync(id);
-
-            if (existingUser == null)
-            {
-                return NotFound("Usuário não encontrado.");
-            }
-
-            // Atualização dos campos
-
-            existingUser.Nome = updatedUser.Nome;
-            existingUser.Email = updatedUser.Email;
-            existingUser.Telefone = updatedUser.Telefone;
-            existingUser.TipoUsuario = updatedUser.TipoUsuario;
-            existingUser.Ativo = updatedUser.Ativo;
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            var result = await _userService.UpdateAsync(id, dto);
+            return ToActionResult(result);
         }
-
-        // DELETE: api/users/1
-        // Remover usuário
 
         /// <summary>
         /// Remove um usuário.
         /// </summary>
-        /// <param name="id">ID do usuário.</param>
-        /// <returns>Sem conteúdo.</returns>
-        /// <response code="204">Usuário removido com sucesso.</response>
-        /// <response code="404">Usuário não encontrado.</response>
-
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await _context.Users
-                .FindAsync(id);
+            var result = await _userService.DeleteAsync(id);
+            return ToActionResult(result);
+        }
 
-            if (user == null)
-            {
-                return NotFound("Usuário não encontrado.");
-            }
+        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
+        {
+            if (!result.Succeeded)
+                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
 
-            _context.Users.Remove(user);
+            return Ok(result.Data);
+        }
 
-            await _context.SaveChangesAsync();
+        private IActionResult ToActionResult(ServiceResult result)
+        {
+            if (!result.Succeeded)
+                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
 
             return NoContent();
         }

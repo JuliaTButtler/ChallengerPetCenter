@@ -1,7 +1,7 @@
-using ChallengerPetCenter.Data;
-using ChallengerPetCenter.Models;
+using ChallengerPetCenter.Common;
+using ChallengerPetCenter.DTOs.Solicitacoes;
+using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ChallengerPetCenter.Controllers
 {
@@ -10,305 +10,152 @@ namespace ChallengerPetCenter.Controllers
     [Produces("application/json")]
     public class SolicitacoesController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ISolicitacaoService _solicitacaoService;
 
-        public SolicitacoesController(AppDbContext context)
+        public SolicitacoesController(ISolicitacaoService solicitacaoService)
         {
-            _context = context;
+            _solicitacaoService = solicitacaoService;
         }
-
-        // GET: api/solicitacoes
-        // Lista todas as solicitações
 
         /// <summary>
         /// Lista todas as solicitações cadastradas.
         /// </summary>
-        /// <returns>Lista de solicitações.</returns>
-        /// <response code="200">Solicitações encontradas com sucesso.</response>
-
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Solicitacao>>> GetSolicitacoes()
+        public async Task<ActionResult<IEnumerable<SolicitacaoResponseDto>>> GetSolicitacoes()
         {
-            var solicitacoes = await _context.Solicitacoes
-                .ToListAsync();
-
+            var solicitacoes = await _solicitacaoService.GetAllAsync();
             return Ok(solicitacoes);
         }
-
-        // GET: api/solicitacoes/1
-        // Buscar solicitação por ID
 
         /// <summary>
         /// Busca uma solicitação pelo ID.
         /// </summary>
-        /// <param name="id">ID da solicitação.</param>
-        /// <returns>Solicitação encontrada.</returns>
-        /// <response code="200">Solicitação encontrada.</response>
-        /// <response code="404">Solicitação não encontrada.</response>
-
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Solicitacao>> GetSolicitacaoById(int id)
+        public async Task<ActionResult<SolicitacaoResponseDto>> GetSolicitacaoById(int id)
         {
-            var solicitacao = await _context.Solicitacoes
-                .FindAsync(id);
-
-            if (solicitacao == null)
-            {
-                return NotFound("Solicitação não encontrada.");
-            }
-
-            return Ok(solicitacao);
+            var result = await _solicitacaoService.GetByIdAsync(id);
+            return ToActionResult(result);
         }
-
-        // GET: api/solicitacoes/pet/1
-        // Buscar solicitações de um pet
 
         /// <summary>
         /// Busca solicitações de um pet.
         /// </summary>
-        /// <param name="petId">ID do pet.</param>
-        /// <returns>Lista de solicitações.</returns>
-        /// <response code="200">Solicitações encontradas.</response>
-        /// <response code="404">Nenhuma solicitação encontrada.</response>
-
         [HttpGet("pet/{petId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<Solicitacao>>> GetSolicitacoesByPet(int petId)
+        public async Task<ActionResult<IEnumerable<SolicitacaoResponseDto>>> GetSolicitacoesByPet(int petId)
         {
-            var solicitacoes = await _context.Solicitacoes
-                .Where(s => s.PetId == petId)
-                .ToListAsync();
-
+            var solicitacoes = (await _solicitacaoService.GetByPetAsync(petId)).ToList();
             if (!solicitacoes.Any())
-            {
                 return NotFound("Nenhuma solicitação encontrada.");
-            }
 
             return Ok(solicitacoes);
         }
-
-        // GET: api/solicitacoes/tutor/1
-        // Buscar solicitações de um tutor
 
         /// <summary>
         /// Busca solicitações de um tutor.
         /// </summary>
-        /// <param name="tutorId">ID do tutor.</param>
-        /// <returns>Lista de solicitações.</returns>
-        /// <response code="200">Solicitações encontradas.</response>
-        /// <response code="404">Nenhuma solicitação encontrada.</response>
-
         [HttpGet("tutor/{tutorId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<Solicitacao>>> GetSolicitacoesByTutor(int tutorId)
+        public async Task<ActionResult<IEnumerable<SolicitacaoResponseDto>>> GetSolicitacoesByTutor(int tutorId)
         {
-            var solicitacoes = await _context.Solicitacoes
-                .Where(s => s.TutorId == tutorId)
-                .ToListAsync();
-
+            var solicitacoes = (await _solicitacaoService.GetByTutorAsync(tutorId)).ToList();
             if (!solicitacoes.Any())
-            {
                 return NotFound("Nenhuma solicitação encontrada.");
-            }
 
             return Ok(solicitacoes);
         }
-
-        // GET: api/solicitacoes/veterinario/1
-        // Buscar solicitações de um veterinário
 
         /// <summary>
         /// Busca solicitações de um veterinário.
         /// </summary>
-        /// <param name="veterinarioId">ID do veterinário.</param>
-        /// <returns>Lista de solicitações.</returns>
-        /// <response code="200">Solicitações encontradas.</response>
-        /// <response code="404">Nenhuma solicitação encontrada.</response>
-
         [HttpGet("veterinario/{veterinarioId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<Solicitacao>>> GetSolicitacoesByVeterinario(int veterinarioId)
+        public async Task<ActionResult<IEnumerable<SolicitacaoResponseDto>>> GetSolicitacoesByVeterinario(int veterinarioId)
         {
-            var solicitacoes = await _context.Solicitacoes
-                .Where(s => s.VeterinarioId == veterinarioId)
-                .ToListAsync();
-
+            var solicitacoes = (await _solicitacaoService.GetByVeterinarioAsync(veterinarioId)).ToList();
             if (!solicitacoes.Any())
-            {
                 return NotFound("Nenhuma solicitação encontrada.");
-            }
 
             return Ok(solicitacoes);
         }
-
-        // GET: api/solicitacoes/status/PENDENTE
-        // Buscar solicitações por status
 
         /// <summary>
         /// Busca solicitações por status.
         /// </summary>
-        /// <param name="status">Status da solicitação.</param>
-        /// <returns>Lista de solicitações.</returns>
-        /// <response code="200">Solicitações encontradas.</response>
-        /// <response code="404">Nenhuma solicitação encontrada.</response>
-
         [HttpGet("status/{status}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<IEnumerable<Solicitacao>>> GetSolicitacoesByStatus(string status)
+        public async Task<ActionResult<IEnumerable<SolicitacaoResponseDto>>> GetSolicitacoesByStatus(string status)
         {
-            var solicitacoes = await _context.Solicitacoes
-                .Where(s => s.Status.ToUpper() == status.ToUpper())
-                .ToListAsync();
-
+            var solicitacoes = (await _solicitacaoService.GetByStatusAsync(status)).ToList();
             if (!solicitacoes.Any())
-            {
                 return NotFound("Nenhuma solicitação encontrada.");
-            }
 
             return Ok(solicitacoes);
         }
 
-        // POST: api/solicitacoes
-        // Criar solicitação
-
         /// <summary>
         /// Cria uma nova solicitação.
         /// </summary>
-        /// <param name="solicitacao">Dados da solicitação.</param>
-        /// <returns>Solicitação criada.</returns>
-        /// <response code="201">Solicitação criada com sucesso.</response>
-        /// <response code="400">Dados inválidos.</response>
-
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Solicitacao>> CreateSolicitacao(Solicitacao solicitacao)
+        public async Task<ActionResult<SolicitacaoResponseDto>> CreateSolicitacao(CreateSolicitacaoDto dto)
         {
-            solicitacao.Pet = null;
-            solicitacao.Tutor = null;
-            solicitacao.Veterinario = null;
-
-            if (string.IsNullOrWhiteSpace(solicitacao.Status))
-            {
-                return BadRequest("Status é obrigatório.");
-            }
-
-            // Verificar se pet existe
-
-            var petCount = await _context.Pets
-                .CountAsync(p => p.Id == solicitacao.PetId);
-
-            if (petCount == 0)
-            {
-                return BadRequest("Pet não encontrado.");
-            }
-
-            // Verificar se tutor existe
-
-            var tutorCount = await _context.Users
-                .CountAsync(u => u.Id == solicitacao.TutorId);
-
-            if (tutorCount == 0)
-            {
-                return BadRequest("Tutor não encontrado.");
-            }
-
-            // Verificar se veterinário existe
-
-            var veterinarioCount = await _context.Veterinarios
-                .CountAsync(v => v.Id == solicitacao.VeterinarioId);
-
-            if (veterinarioCount == 0)
-            {
-                return BadRequest("Veterinário não encontrado.");
-            }
-
-            _context.Solicitacoes.Add(solicitacao);
-
-            await _context.SaveChangesAsync();
+            var result = await _solicitacaoService.CreateAsync(dto);
+            if (!result.Succeeded)
+                return BadRequest(result.Error);
 
             return CreatedAtAction(
                 nameof(GetSolicitacaoById),
-                new { id = solicitacao.Id },
-                solicitacao
+                new { id = result.Data!.Id },
+                result.Data
             );
         }
-
-        // PUT: api/solicitacoes/1
-        // Atualizar solicitação
 
         /// <summary>
         /// Atualiza uma solicitação existente.
         /// </summary>
-        /// <param name="id">ID da solicitação.</param>
-        /// <param name="updatedSolicitacao">Dados atualizados.</param>
-        /// <returns>Sem conteúdo.</returns>
-        /// <response code="204">Solicitação atualizada com sucesso.</response>
-        /// <response code="400">Dados inválidos.</response>
-        /// <response code="404">Solicitação não encontrada.</response>
-
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> UpdateSolicitacao(int id, Solicitacao updatedSolicitacao)
+        public async Task<IActionResult> UpdateSolicitacao(int id, UpdateSolicitacaoDto dto)
         {
-            if (id != updatedSolicitacao.Id)
-            {
-                return BadRequest("ID da rota diferente do ID enviado.");
-            }
-
-            var existingSolicitacao = await _context.Solicitacoes
-                .FindAsync(id);
-
-            if (existingSolicitacao == null)
-            {
-                return NotFound("Solicitação não encontrada.");
-            }
-
-            existingSolicitacao.Status = updatedSolicitacao.Status;
-            existingSolicitacao.Mensagem = updatedSolicitacao.Mensagem;
-            existingSolicitacao.RespondidoEm = updatedSolicitacao.RespondidoEm;
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            var result = await _solicitacaoService.UpdateAsync(id, dto);
+            return ToActionResult(result);
         }
-
-        // DELETE: api/solicitacoes/1
-        // Remover solicitação
 
         /// <summary>
         /// Remove uma solicitação.
         /// </summary>
-        /// <param name="id">ID da solicitação.</param>
-        /// <returns>Sem conteúdo.</returns>
-        /// <response code="204">Solicitação removida com sucesso.</response>
-        /// <response code="404">Solicitação não encontrada.</response>
-
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteSolicitacao(int id)
         {
-            var solicitacao = await _context.Solicitacoes
-                .FindAsync(id);
+            var result = await _solicitacaoService.DeleteAsync(id);
+            return ToActionResult(result);
+        }
 
-            if (solicitacao == null)
-            {
-                return NotFound("Solicitação não encontrada.");
-            }
+        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
+        {
+            if (!result.Succeeded)
+                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
 
-            _context.Solicitacoes.Remove(solicitacao);
+            return Ok(result.Data);
+        }
 
-            await _context.SaveChangesAsync();
+        private IActionResult ToActionResult(ServiceResult result)
+        {
+            if (!result.Succeeded)
+                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
 
             return NoContent();
         }
