@@ -37,7 +37,7 @@ O conceito principal da plataforma é transformar registros cotidianos em inform
 
 Nesta primeira sprint, o foco do projeto foi o desenvolvimento da API RESTful, integração com banco de dados Oracle utilizando Entity Framework Core, documentação via Swagger/OpenAPI e implementação completa dos CRUDs das principais entidades do sistema.
 
-Nas sprints seguintes foram adicionadas camadas de Services/DTOs, testes automatizados (xUnit), monitoramento via Health Checks e logging estruturado com Serilog. Tracing (OpenTelemetry) está no roadmap da sprint de observabilidade.
+Nas sprints seguintes foram adicionadas camadas de Services/DTOs, testes automatizados (xUnit), monitoramento via Health Checks, logging estruturado com Serilog e tracing/métricas com OpenTelemetry (export console, sem cloud).
 
 As funcionalidades relacionadas à inteligência artificial, geração automática de insights e integração com dispositivos IoT foram planejadas para futuras sprints do projeto.
 
@@ -53,6 +53,7 @@ As funcionalidades relacionadas à inteligência artificial, geração automáti
 * Swagger / OpenAPI
 * Microsoft.Extensions.Diagnostics.HealthChecks
 * Serilog (logging estruturado)
+* OpenTelemetry (tracing e métricas — export console)
 * xUnit / Moq (testes automatizados)
 * C#
 * .NET 8
@@ -125,6 +126,37 @@ A API usa **Serilog** no lugar do logging padrão do ASP.NET Core.
 
 ---
 
+## OpenTelemetry (Tracing e Métricas)
+
+Observabilidade **local**, sem Application Insights / cloud.
+
+### O que está instrumentado
+* **AspNetCore** — cada request HTTP gera um span (ex.: `GET /api/users`)
+* **HttpClient** — chamadas externas (ex.: health check do Google) entram no mesmo fluxo de tracing
+
+Rotas `/health*` e `/swagger*` são filtradas do tracing para reduzir ruído.
+
+### Métricas
+* Instrumentation AspNetCore/HttpClient (duração de request, contagem, erros)
+* Exportadas no console a cada ~15 segundos
+
+### Configuração (`appsettings.json`)
+```json
+"OpenTelemetry": {
+  "ServiceName": "ChallengerPetCenter",
+  "EnableConsoleExporters": true
+}
+```
+
+### Como observar
+1. `dotnet run`
+2. Chame `GET /api/users` (ou outro endpoint de negócio)
+3. No terminal, além do Serilog, aparecem blocos do exporter OpenTelemetry (Activity/spans e, periodicamente, métricas)
+
+Não há dependência de collector OTLP nem de Azure nesta entrega.
+
+---
+
 ## Testes Automatizados
 
 A solution inclui projetos separados:
@@ -194,6 +226,7 @@ dotnet test ChallengerPetCenter.sln
 * Health Checks (`/health`, `/health/live`, `/health/ready`)
 * Verificação de Oracle e serviço externo
 * Logging estruturado com Serilog (console + arquivo, CorrelationId)
+* OpenTelemetry (tracing + métricas no console)
 
 ---
 

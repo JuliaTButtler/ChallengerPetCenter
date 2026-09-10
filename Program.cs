@@ -6,6 +6,9 @@ using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 
 using System.Reflection;
@@ -23,6 +26,49 @@ try
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
         .Enrich.WithProperty("Application", "ChallengerPetCenter"));
+
+    var otelServiceName = builder.Configuration["OpenTelemetry:ServiceName"]
+        ?? "ChallengerPetCenter";
+    var exportToConsole = builder.Configuration.GetValue(
+        "OpenTelemetry:EnableConsoleExporters", true);
+
+    // OpenTelemetry — tracing + métricas (export console, sem cloud)
+    builder.Services.AddOpenTelemetry()
+        .ConfigureResource(resource => resource
+            .AddService(serviceName: otelServiceName))
+        .WithTracing(tracing =>
+        {
+            tracing
+                .AddAspNetCoreInstrumentation(options =>
+                {
+                    options.Filter = httpContext =>
+                    {
+                        var path = httpContext.Request.Path.Value ?? string.Empty;
+                        return !path.StartsWith("/health", StringComparison.OrdinalIgnoreCase)
+                               && !path.StartsWith("/swagger", StringComparison.OrdinalIgnoreCase);
+                    };
+                })
+                .AddHttpClientInstrumentation();
+
+            if (exportToConsole)
+            {
+                tracing.AddConsoleExporter();
+            }
+        })
+        .WithMetrics(metrics =>
+        {
+            metrics
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation();
+
+            if (exportToConsole)
+            {
+                metrics.AddConsoleExporter((exporterOptions, metricReaderOptions) =>
+                {
+                    metricReaderOptions.PeriodicExportingMetricReaderOptions.ExportIntervalMilliseconds = 15000;
+                });
+            }
+        });
 
     // Controllers
     builder.Services.AddControllers();
@@ -131,6 +177,7 @@ try
 
     Log.Information("ChallengerPetCenter API iniciando");
     Log.Information("Swagger: http://localhost:5032/swagger | Health: http://localhost:5032/health");
+    Log.Information("OpenTelemetry ativo (console): tracing AspNetCore/HttpClient + métricas");
     app.Run();
 }
 catch (Exception ex)
