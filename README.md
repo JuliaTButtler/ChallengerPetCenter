@@ -37,6 +37,8 @@ O conceito principal da plataforma é transformar registros cotidianos em inform
 
 Nesta primeira sprint, o foco do projeto foi o desenvolvimento da API RESTful, integração com banco de dados Oracle utilizando Entity Framework Core, documentação via Swagger/OpenAPI e implementação completa dos CRUDs das principais entidades do sistema.
 
+Nas sprints seguintes foram adicionadas camadas de Services/DTOs, testes automatizados (xUnit) e monitoramento via Health Checks. Logging estruturado e tracing (OpenTelemetry) estão no roadmap da sprint de observabilidade.
+
 As funcionalidades relacionadas à inteligência artificial, geração automática de insights e integração com dispositivos IoT foram planejadas para futuras sprints do projeto.
 
 ---
@@ -49,8 +51,63 @@ As funcionalidades relacionadas à inteligência artificial, geração automáti
 * Oracle SQL Developer
 * Oracle Entity Framework Core Provider
 * Swagger / OpenAPI
+* Microsoft.Extensions.Diagnostics.HealthChecks
+* xUnit / Moq (testes automatizados)
 * C#
 * .NET 8
+
+---
+
+## Health Checks (Monitoramento)
+
+A API expõe endpoints de saúde com `Microsoft.Extensions.Diagnostics.HealthChecks`:
+
+| Endpoint | O que verifica |
+|----------|----------------|
+| `GET /health` ou `GET /healthz` | Todos os checks (visão geral) |
+| `GET /health/live` | Processo da API (liveness / self) |
+| `GET /health/ready` | Oracle + serviço externo (readiness) |
+
+Checks registrados:
+
+* **self** — API em execução
+* **oracle** — conectividade com o banco via `AddDbContextCheck<AppDbContext>`
+* **external_service** — HTTP GET em URL configurável (`HealthChecks:ExternalServiceUrl` no `appsettings.json`). Se a URL estiver vazia, o check reporta Healthy com mensagem explicativa.
+
+Exemplo de resposta JSON (status Healthy):
+
+```json
+{
+  "status": "Healthy",
+  "totalDuration": "00:00:00.12",
+  "entries": {
+    "self": { "status": "Healthy", "description": "API ChallengerPetCenter está em execução." },
+    "oracle": { "status": "Healthy" },
+    "external_service": { "status": "Healthy", "description": "Serviço externo respondendo: https://www.google.com (200)." }
+  }
+}
+```
+
+Como testar: com a API rodando (`dotnet run`), abra no navegador ou via curl:
+
+```text
+http://localhost:<porta>/health
+http://localhost:<porta>/health/live
+http://localhost:<porta>/health/ready
+```
+
+---
+
+## Testes Automatizados
+
+A solution inclui projetos separados:
+
+* `ChallengerPetCenter.UnitTests` — testes unitários (padrão AAA) dos Services e Controllers
+* `ChallengerPetCenter.IntegrationTests` — base para testes de integração com `WebApplicationFactory`
+
+```bash
+dotnet test ChallengerPetCenter.sln
+```
 
 ---
 
@@ -104,6 +161,11 @@ As funcionalidades relacionadas à inteligência artificial, geração automáti
 
 * Associação entre pets e veterinários
 * Histórico de acompanhamento
+
+### Monitoramento
+
+* Health Checks (`/health`, `/health/live`, `/health/ready`)
+* Verificação de Oracle e serviço externo
 
 ---
 
