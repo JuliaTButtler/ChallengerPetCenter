@@ -7,6 +7,7 @@ TestResults/
 *.trx
 *.coverage
 *.coveragexml
+logs/
 
 *.user
 *.suo

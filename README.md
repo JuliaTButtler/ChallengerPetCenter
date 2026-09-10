@@ -37,7 +37,7 @@ O conceito principal da plataforma é transformar registros cotidianos em inform
 
 Nesta primeira sprint, o foco do projeto foi o desenvolvimento da API RESTful, integração com banco de dados Oracle utilizando Entity Framework Core, documentação via Swagger/OpenAPI e implementação completa dos CRUDs das principais entidades do sistema.
 
-Nas sprints seguintes foram adicionadas camadas de Services/DTOs, testes automatizados (xUnit) e monitoramento via Health Checks. Logging estruturado e tracing (OpenTelemetry) estão no roadmap da sprint de observabilidade.
+Nas sprints seguintes foram adicionadas camadas de Services/DTOs, testes automatizados (xUnit), monitoramento via Health Checks e logging estruturado com Serilog. Tracing (OpenTelemetry) está no roadmap da sprint de observabilidade.
 
 As funcionalidades relacionadas à inteligência artificial, geração automática de insights e integração com dispositivos IoT foram planejadas para futuras sprints do projeto.
 
@@ -52,6 +52,7 @@ As funcionalidades relacionadas à inteligência artificial, geração automáti
 * Oracle Entity Framework Core Provider
 * Swagger / OpenAPI
 * Microsoft.Extensions.Diagnostics.HealthChecks
+* Serilog (logging estruturado)
 * xUnit / Moq (testes automatizados)
 * C#
 * .NET 8
@@ -95,6 +96,32 @@ http://localhost:<porta>/health
 http://localhost:<porta>/health/live
 http://localhost:<porta>/health/ready
 ```
+
+---
+
+## Logging Estruturado (Serilog)
+
+A API usa **Serilog** no lugar do logging padrão do ASP.NET Core.
+
+### Saídas
+* **Console** — durante `dotnet run`
+* **Arquivo** — `logs/challenger-pet-center-YYYYMMDD.log` (rolling diário, retém 14 dias)
+
+### Níveis
+* Padrão da aplicação: **Information**
+* Warnings/Erros de request HTTP: status `4xx` → Warning; `5xx` ou exception → Error
+* Framework (`Microsoft.*`, EF Core): **Warning** (para reduzir ruído)
+
+### Correlação de requisições
+* Middleware `CorrelationIdMiddleware` gera ou propaga o header `X-Correlation-ID`
+* Cada log inclui `CorrelationId` e `RequestId` (TraceIdentifier)
+* `UseSerilogRequestLogging` registra método, path, status e tempo de resposta
+
+### Como observar
+1. Rode `dotnet run` e faça uma chamada (ex.: `/health` ou `/api/users`)
+2. No console, veja linhas no formato: `[HH:mm:ss INF] (correlationId/requestId) HTTP GET /health respondeu 200 em ... ms`
+3. Confira o mesmo conteúdo em `logs/challenger-pet-center-*.log`
+4. Opcional: envie o header `X-Correlation-ID: meu-id-teste` e confira se ele aparece nos logs e na resposta
 
 ---
 
@@ -166,6 +193,7 @@ dotnet test ChallengerPetCenter.sln
 
 * Health Checks (`/health`, `/health/live`, `/health/ready`)
 * Verificação de Oracle e serviço externo
+* Logging estruturado com Serilog (console + arquivo, CorrelationId)
 
 ---
 
