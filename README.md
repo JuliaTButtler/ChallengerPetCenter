@@ -25,19 +25,26 @@ Como solução, a plataforma propõe a criação de um “diário inteligente do
 
 O sistema permite:
 
-* Cadastro e gerenciamento de usuários
-* Cadastro de pets
-* Associação entre pets e veterinários
-* Criação de entradas diárias no diário do pet
-* Registro de alimentação, sintomas, atividades e comportamento
-* Comentários veterinários nas entradas do diário
-* Solicitações de acompanhamento veterinário
+* Cadastro e gerenciamento de usuários (tutores e veterinários)
+* Autenticação JWT mínima (login e endpoints protegidos)
+* Cadastro de pets e vínculo pet–veterinário
+* Diário do pet com registros diários (alimentação, sintomas, comportamento)
+* Comentários e solicitações de acompanhamento
+* Health Checks, logging estruturado (Serilog) e tracing/métricas (OpenTelemetry)
+* Testes automatizados (unitários e de integração)
 
 O conceito principal da plataforma é transformar registros cotidianos em informações organizadas e úteis para acompanhamento clínico, criando um histórico contínuo da vida do animal.
 
 Nesta primeira sprint, o foco do projeto foi o desenvolvimento da API RESTful, integração com banco de dados Oracle utilizando Entity Framework Core, documentação via Swagger/OpenAPI e implementação completa dos CRUDs das principais entidades do sistema.
 
-Nas sprints seguintes foram adicionadas camadas de Services/DTOs, testes automatizados (xUnit unitário + integração), monitoramento via Health Checks, logging estruturado com Serilog, tracing/métricas com OpenTelemetry (export console) e autenticação JWT.
+Nas sprints seguintes a API evoluiu com:
+
+* Separação em **Controllers** (HTTP), **Services** (regras de negócio) e **DTOs** (contratos de entrada/saída)
+* **Health Checks** (API, Oracle e serviço externo)
+* **Serilog** (console + arquivo, CorrelationId / RequestId)
+* **OpenTelemetry** (tracing e métricas no console, sem cloud)
+* **JWT** mínimo (`/api/auth/login`, `/api/auth/me`, delete de usuário protegido)
+* Projetos **UnitTests** e **IntegrationTests** (xUnit, Moq, WebApplicationFactory)
 
 As funcionalidades relacionadas à inteligência artificial, geração automática de insights e integração com dispositivos IoT foram planejadas para futuras sprints do projeto.
 
@@ -161,18 +168,16 @@ Não há dependência de collector OTLP nem de Azure nesta entrega.
 ## Autenticação JWT (mínima)
 
 * `POST /api/auth/login` — email + senha → retorna Bearer token
-* `GET /api/auth/me` — requer JWT (401 sem token)
+* `GET /api/auth/me` — requer JWT (**401** sem token)
 * `DELETE /api/users/{id}` — requer JWT
 
 Configuração em `appsettings.json` (`Jwt:Key`, `Issuer`, `Audience`, `ExpirationMinutes`).
 
-### Como testar no Swagger
-1. Crie um usuário (`POST /api/users`) ou use um existente
-2. Faça login em `POST /api/auth/login`
-3. Clique em **Authorize**, cole o token (ou `Bearer {token}`)
-4. Chame `GET /api/auth/me` ou `DELETE /api/users/{id}`
+Cada login gera um token ligado àquele usuário (claims: id, email, tipo). O token vale até expirar (padrão 120 minutos); não há blacklist — apagar o usuário não invalida o token imediatamente.
 
 > Observação: a senha ainda é comparada em texto puro (mínimo acadêmico). Hash seria evolução futura.
+
+Veja o **Guia de testes manuais no Swagger** mais abaixo para exemplos completos de login e Authorize.
 
 ---
 
@@ -180,8 +185,10 @@ Configuração em `appsettings.json` (`Jwt:Key`, `Issuer`, `Audience`, `Expirati
 
 A solution inclui projetos separados por camada:
 
-* `ChallengerPetCenter.UnitTests` — AAA nos Services/Controllers (Moq + EF InMemory)
+* `ChallengerPetCenter.UnitTests` — AAA nos Services/Controllers (Moq + EF InMemory), Collection Fixture do banco
 * `ChallengerPetCenter.IntegrationTests` — `WebApplicationFactory` + EF InMemory + Collection Fixture
+
+Nomenclatura: `Metodo_Cenario_ResultadoEsperado` (ex.: `CreateAsync_QuandoEmailJaExiste_RetornaFailure`).
 
 Cobertura de integração inclui:
 * Auth: `401` sem token, `200` com token, login inválido `400`
@@ -191,6 +198,8 @@ Cobertura de integração inclui:
 ```bash
 dotnet test ChallengerPetCenter.sln
 ```
+
+Para testes manuais com exemplos de body, use a seção **Guia de testes manuais no Swagger**.
 
 ---
 
@@ -264,12 +273,233 @@ dotnet test ChallengerPetCenter.sln
 
 A API foi desenvolvida seguindo o padrão REST, utilizando boas práticas de:
 
-* Organização de rotas
-* Retornos HTTP corretos
-* Estruturação em Controllers
-* Integração com banco Oracle
-* Documentação profissional com Swagger
-* Separação entre Models, Controllers e DbContext
+* Organização de rotas e retornos HTTP corretos
+* Controllers finos + Services com regras de negócio + DTOs
+* Integração com Oracle (EF Core)
+* Documentação com Swagger/OpenAPI
+* Observabilidade (Health Checks, Serilog, OpenTelemetry)
+* Autenticação JWT mínima
+* Testes automatizados (unitários e integração)
+
+### Como subir a API
+
+```bash
+dotnet run
+```
+
+Swagger (perfil http): http://localhost:5032/swagger
+
+### Como rodar os testes automatizados
+
+```bash
+dotnet test ChallengerPetCenter.sln
+```
+
+---
+
+## Guia de testes manuais no Swagger (POST)
+
+Use este fluxo na ordem. Em cada POST: abra o endpoint → **Try it out** → cole o JSON → **Execute**.  
+Os IDs (`userId`, `petId`, etc.) devem ser os retornados nas respostas anteriores (não copie IDs inventados se o banco já tiver outros registros).
+
+### Passo 1 — Criar tutor
+
+`POST /api/users`
+
+```json
+{
+  "nome": "Camila Ferreira",
+  "email": "camila.ferreira@email.com",
+  "senha": "Camila@2024",
+  "telefone": "11987654321",
+  "tipoUsuario": "TUTOR"
+}
+```
+
+Espere **201**. Anote o `id` do tutor (ex.: `26`).
+
+### Passo 2 — Criar usuário veterinário
+
+`POST /api/users`
+
+```json
+{
+  "nome": "Ricardo Almeida",
+  "email": "ricardo.almeida@email.com",
+  "senha": "Ricardo@2024",
+  "telefone": "11976543210",
+  "tipoUsuario": "VETERINARIO"
+}
+```
+
+Anote o `id` do usuário veterinário (ex.: `27`).
+
+### Passo 3 — Login (JWT)
+
+`POST /api/auth/login`
+
+```json
+{
+  "email": "camila.ferreira@email.com",
+  "senha": "Camila@2024"
+}
+```
+
+Copie o `token`. No Swagger, clique em **Authorize**, cole o token e confirme.  
+Opcional: `GET /api/auth/me` deve retornar **200** com o email da Camila.
+
+### Passo 4 — Perfil de veterinário
+
+`POST /api/veterinarios`  
+(substitua `userId` pelo id do Ricardo)
+
+```json
+{
+  "crmv": "SP-45872",
+  "especialidade": "Clínica Geral",
+  "descricao": "Atendimento de cães e gatos, com foco em acompanhamento preventivo.",
+  "userId": 27
+}
+```
+
+Anote o `id` do veterinário (ex.: `5`).
+
+### Passo 5 — Cadastrar o pet
+
+`POST /api/pets`  
+(substitua `userId` pelo id da Camila)
+
+```json
+{
+  "nome": "Luna",
+  "especie": "Gato",
+  "raca": "Siamês",
+  "dataNascimento": "2022-03-15T00:00:00",
+  "observacoes": "Alimentação controlada e rotina de brincadeiras à noite.",
+  "userId": 26
+}
+```
+
+Anote o `id` do pet (ex.: `8`).
+
+### Passo 6 — Vincular pet e veterinário
+
+`POST /api/petveterinarios`
+
+```json
+{
+  "petId": 8,
+  "veterinarioId": 5,
+  "dataInicio": "2026-09-01T10:00:00",
+  "observacoes": "Acompanhamento mensal de rotina."
+}
+```
+
+### Passo 7 — Entrada no diário
+
+`POST /api/diarioentradas`
+
+```json
+{
+  "data": "2026-09-11T00:00:00",
+  "resumo": "Dia calmo em casa, brincou após o almoço.",
+  "humorGeral": "TRANQUILO",
+  "status": "ATIVO",
+  "petId": 8
+}
+```
+
+Anote o `id` da entrada (ex.: `12`).  
+Regra: só **uma entrada por pet por dia**.
+
+### Passo 8 — Registro do dia (alimentação)
+
+`POST /api/registros`
+
+```json
+{
+  "tipo": "ALIMENTACAO",
+  "subtipo": "RACAO",
+  "valor": 80,
+  "unidade": "g",
+  "nota": "Comeu bem a porção da manhã.",
+  "horario": "2026-09-11T08:30:00",
+  "diarioEntradaId": 12
+}
+```
+
+Outro exemplo (sintoma):
+
+```json
+{
+  "tipo": "SINTOMA",
+  "subtipo": "APETITE",
+  "valor": null,
+  "unidade": null,
+  "nota": "Apetite levemente reduzido no final da tarde.",
+  "horario": "2026-09-11T17:00:00",
+  "diarioEntradaId": 12
+}
+```
+
+### Passo 9 — Comentário no diário
+
+`POST /api/comentarios`  
+(`userId` pode ser o da Camila ou do Ricardo)
+
+```json
+{
+  "textoComentario": "Manter a rotina alimentar e observar o apetite pelos próximos dois dias.",
+  "diarioEntradaId": 12,
+  "userId": 27
+}
+```
+
+### Passo 10 — Solicitação de acompanhamento
+
+`POST /api/solicitacoes`  
+(`tutorId` deve ser o dono do pet)
+
+```json
+{
+  "status": "PENDENTE",
+  "mensagem": "Gostaria de uma orientação sobre a mudança de apetite da Luna.",
+  "petId": 8,
+  "tutorId": 26,
+  "veterinarioId": 5
+}
+```
+
+Se `status` for omitido, a API assume `PENDENTE`.
+
+### Cenários de erro úteis
+
+| Ação | Body / situação | Esperado |
+|------|-----------------|----------|
+| Email duplicado | mesmo email da Camila em `POST /api/users` | **400** |
+| Login errado | senha incorreta no login | **400** |
+| `/api/auth/me` sem Authorize | — | **401** |
+| Segunda entrada no mesmo dia | mesmo `petId` + mesma `data` | **400** |
+| Solicitação com tutor errado | `tutorId` diferente do dono do pet | **400** |
+| `DELETE /api/users/{id}` sem token | — | **401** |
+
+### Campos dos POST (referência rápida)
+
+| Endpoint | Campos |
+|----------|--------|
+| `POST /api/users` | `nome*`, `email*`, `senha*`, `telefone`, `tipoUsuario*` (`TUTOR` ou `VETERINARIO`) |
+| `POST /api/auth/login` | `email*`, `senha*` |
+| `POST /api/veterinarios` | `crmv*`, `especialidade`, `descricao`, `userId*` |
+| `POST /api/pets` | `nome*`, `especie*`, `raca`, `dataNascimento`, `observacoes`, `userId*` |
+| `POST /api/petveterinarios` | `petId*`, `veterinarioId*`, `dataInicio`, `observacoes` |
+| `POST /api/diarioentradas` | `data*`, `resumo`, `humorGeral`, `status`, `petId*` |
+| `POST /api/registros` | `tipo*`, `subtipo`, `valor`, `unidade`, `nota`, `horario`, `diarioEntradaId*` |
+| `POST /api/comentarios` | `textoComentario*`, `diarioEntradaId*`, `userId*` |
+| `POST /api/solicitacoes` | `status`, `mensagem`, `petId*`, `tutorId*`, `veterinarioId*` |
+
+\* obrigatório
+
+---
 
 # Documentação das Rotas
 
@@ -299,7 +529,19 @@ A API foi desenvolvida seguindo o padrão REST, utilizando boas práticas de:
 
 ### DELETE
 `/api/users/{id}`
-- Remove um usuário
+- Remove um usuário (**requer JWT**)
+
+---
+
+# Auth
+
+### POST
+`/api/auth/login`
+- Autentica e retorna JWT
+
+### GET
+`/api/auth/me`
+- Dados do usuário autenticado (**requer JWT**)
 
 ---
 
