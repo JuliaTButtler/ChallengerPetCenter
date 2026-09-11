@@ -37,7 +37,7 @@ O conceito principal da plataforma é transformar registros cotidianos em inform
 
 Nesta primeira sprint, o foco do projeto foi o desenvolvimento da API RESTful, integração com banco de dados Oracle utilizando Entity Framework Core, documentação via Swagger/OpenAPI e implementação completa dos CRUDs das principais entidades do sistema.
 
-Nas sprints seguintes foram adicionadas camadas de Services/DTOs, testes automatizados (xUnit), monitoramento via Health Checks, logging estruturado com Serilog e tracing/métricas com OpenTelemetry (export console, sem cloud).
+Nas sprints seguintes foram adicionadas camadas de Services/DTOs, testes automatizados (xUnit unitário + integração), monitoramento via Health Checks, logging estruturado com Serilog, tracing/métricas com OpenTelemetry (export console) e autenticação JWT.
 
 As funcionalidades relacionadas à inteligência artificial, geração automática de insights e integração com dispositivos IoT foram planejadas para futuras sprints do projeto.
 
@@ -54,7 +54,8 @@ As funcionalidades relacionadas à inteligência artificial, geração automáti
 * Microsoft.Extensions.Diagnostics.HealthChecks
 * Serilog (logging estruturado)
 * OpenTelemetry (tracing e métricas — export console)
-* xUnit / Moq (testes automatizados)
+* JWT Bearer (autenticação mínima)
+* xUnit / Moq / WebApplicationFactory (testes)
 * C#
 * .NET 8
 
@@ -157,12 +158,35 @@ Não há dependência de collector OTLP nem de Azure nesta entrega.
 
 ---
 
+## Autenticação JWT (mínima)
+
+* `POST /api/auth/login` — email + senha → retorna Bearer token
+* `GET /api/auth/me` — requer JWT (401 sem token)
+* `DELETE /api/users/{id}` — requer JWT
+
+Configuração em `appsettings.json` (`Jwt:Key`, `Issuer`, `Audience`, `ExpirationMinutes`).
+
+### Como testar no Swagger
+1. Crie um usuário (`POST /api/users`) ou use um existente
+2. Faça login em `POST /api/auth/login`
+3. Clique em **Authorize**, cole o token (ou `Bearer {token}`)
+4. Chame `GET /api/auth/me` ou `DELETE /api/users/{id}`
+
+> Observação: a senha ainda é comparada em texto puro (mínimo acadêmico). Hash seria evolução futura.
+
+---
+
 ## Testes Automatizados
 
-A solution inclui projetos separados:
+A solution inclui projetos separados por camada:
 
-* `ChallengerPetCenter.UnitTests` — testes unitários (padrão AAA) dos Services e Controllers
-* `ChallengerPetCenter.IntegrationTests` — base para testes de integração com `WebApplicationFactory`
+* `ChallengerPetCenter.UnitTests` — AAA nos Services/Controllers (Moq + EF InMemory)
+* `ChallengerPetCenter.IntegrationTests` — `WebApplicationFactory` + EF InMemory + Collection Fixture
+
+Cobertura de integração inclui:
+* Auth: `401` sem token, `200` com token, login inválido `400`
+* Users: `201` create, `400` email duplicado, `404` id inexistente
+* Health live: `200`
 
 ```bash
 dotnet test ChallengerPetCenter.sln
@@ -177,7 +201,12 @@ dotnet test ChallengerPetCenter.sln
 * Cadastro de usuários
 * Consulta de usuários
 * Atualização de usuários
-* Remoção de usuários
+* Remoção de usuários (requer JWT)
+
+### Autenticação
+
+* Login com JWT (`POST /api/auth/login`)
+* Perfil autenticado (`GET /api/auth/me`)
 
 ### Veterinários
 
@@ -227,6 +256,7 @@ dotnet test ChallengerPetCenter.sln
 * Verificação de Oracle e serviço externo
 * Logging estruturado com Serilog (console + arquivo, CorrelationId)
 * OpenTelemetry (tracing + métricas no console)
+* JWT mínimo (login + endpoints protegidos)
 
 ---
 

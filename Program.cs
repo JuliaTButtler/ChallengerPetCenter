@@ -1,11 +1,19 @@
+using System.Text;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using ChallengerPetCenter.Configuration;
 using ChallengerPetCenter.Data;
 using ChallengerPetCenter.HealthChecks;
 using ChallengerPetCenter.Middleware;
 using ChallengerPetCenter.Services;
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -73,7 +81,46 @@ try
     // Controllers
     builder.Services.AddControllers();
 
+    // JWT
+    builder.Services.Configure<JwtSettings>(
+        builder.Configuration.GetSection(JwtSettings.SectionName));
+
+    var jwtKey = builder.Configuration["Jwt:Key"];
+    if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.Length < 32)
+    {
+        throw new InvalidOperationException(
+            "Jwt:Key deve ter pelo menos 32 caracteres no appsettings.json.");
+    }
+
+    builder.Services
+        .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer();
+
+    builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+        .Configure<IOptions<JwtSettings>>((options, jwtAccessor) =>
+        {
+            var jwt = jwtAccessor.Value;
+            options.MapInboundClaims = false;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwt.Issuer,
+                ValidAudience = jwt.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(jwt.Key)),
+                ClockSkew = TimeSpan.FromMinutes(1),
+                NameClaimType = JwtRegisteredClaimNames.Sub,
+                RoleClaimType = ClaimTypes.Role
+            };
+        });
+
+    builder.Services.AddAuthorization();
+
     // Services
+    builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IPetService, PetService>();
     builder.Services.AddScoped<IVeterinarioService, VeterinarioService>();
@@ -83,7 +130,7 @@ try
     builder.Services.AddScoped<IComentarioService, ComentarioService>();
     builder.Services.AddScoped<ISolicitacaoService, SolicitacaoService>();
 
-    // Swagger
+    // Swagger + Bearer
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
@@ -92,6 +139,21 @@ try
         options.IncludeXmlComments(
             Path.Combine(AppContext.BaseDirectory, xmlFilename)
         );
+
+        options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Informe: Bearer {seu_token}"
+        });
+
+        options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+        });
     });
 
     // DbContext Oracle
@@ -148,6 +210,7 @@ try
     // HTTPS
     // app.UseHttpsRedirection();
 
+    app.UseAuthentication();
     app.UseAuthorization();
 
     app.MapControllers();

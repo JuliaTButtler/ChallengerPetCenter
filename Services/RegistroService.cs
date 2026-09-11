@@ -62,7 +62,7 @@ namespace ChallengerPetCenter.Services
         public async Task<ServiceResult<RegistroResponseDto>> CreateAsync(CreateRegistroDto dto)
         {
             var diarioExiste = await _context.DiarioEntradas
-                .AnyAsync(d => d.Id == dto.DiarioEntradaId);
+                .CountAsync(d => d.Id == dto.DiarioEntradaId) > 0;
 
             if (!diarioExiste)
                 return ServiceResult<RegistroResponseDto>.Failure("Entrada do diário não encontrada.");

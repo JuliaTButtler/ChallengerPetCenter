@@ -55,7 +55,7 @@ namespace ChallengerPetCenter.Services
         public async Task<ServiceResult<UserResponseDto>> CreateAsync(CreateUserDto dto)
         {
             var emailExiste = await _context.Users
-                .AnyAsync(u => u.Email == dto.Email);
+                .CountAsync(u => u.Email == dto.Email) > 0;
 
             if (emailExiste)
                 return ServiceResult<UserResponseDto>.Failure("Email já cadastrado.");
@@ -87,7 +87,7 @@ namespace ChallengerPetCenter.Services
                 return ServiceResult.AsNotFound("Usuário não encontrado.");
 
             var emailEmUso = await _context.Users
-                .AnyAsync(u => u.Email == dto.Email && u.Id != id);
+                .CountAsync(u => u.Email == dto.Email && u.Id != id) > 0;
 
             if (emailEmUso)
                 return ServiceResult.Failure("Email já cadastrado.");

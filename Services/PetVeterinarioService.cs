@@ -59,21 +59,21 @@ namespace ChallengerPetCenter.Services
 
         public async Task<ServiceResult<PetVeterinarioResponseDto>> CreateAsync(CreatePetVeterinarioDto dto)
         {
-            var petExiste = await _context.Pets.AnyAsync(p => p.Id == dto.PetId);
+            var petExiste = await _context.Pets.CountAsync(p => p.Id == dto.PetId) > 0;
             if (!petExiste)
                 return ServiceResult<PetVeterinarioResponseDto>.Failure("Pet não encontrado.");
 
             var veterinarioExiste = await _context.Veterinarios
-                .AnyAsync(v => v.Id == dto.VeterinarioId);
+                .CountAsync(v => v.Id == dto.VeterinarioId) > 0;
 
             if (!veterinarioExiste)
                 return ServiceResult<PetVeterinarioResponseDto>.Failure("Veterinário não encontrado.");
 
             var vinculoAtivoExiste = await _context.PetVeterinarios
-                .AnyAsync(pv =>
+                .CountAsync(pv =>
                     pv.PetId == dto.PetId &&
                     pv.VeterinarioId == dto.VeterinarioId &&
-                    pv.Ativo == 1);
+                    pv.Ativo == 1) > 0;
 
             if (vinculoAtivoExiste)
                 return ServiceResult<PetVeterinarioResponseDto>.Failure(
@@ -107,11 +107,11 @@ namespace ChallengerPetCenter.Services
             if (dto.Ativo == 1 && existing.Ativo != 1)
             {
                 var outroAtivo = await _context.PetVeterinarios
-                    .AnyAsync(pv =>
+                    .CountAsync(pv =>
                         pv.Id != id &&
                         pv.PetId == existing.PetId &&
                         pv.VeterinarioId == existing.VeterinarioId &&
-                        pv.Ativo == 1);
+                        pv.Ativo == 1) > 0;
 
                 if (outroAtivo)
                     return ServiceResult.Failure(

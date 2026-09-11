@@ -72,7 +72,7 @@ namespace ChallengerPetCenter.Services
             if (pet == null)
                 return ServiceResult<SolicitacaoResponseDto>.Failure("Pet não encontrado.");
 
-            var tutorExiste = await _context.Users.AnyAsync(u => u.Id == dto.TutorId);
+            var tutorExiste = await _context.Users.CountAsync(u => u.Id == dto.TutorId) > 0;
             if (!tutorExiste)
                 return ServiceResult<SolicitacaoResponseDto>.Failure("Tutor não encontrado.");
 
@@ -81,7 +81,7 @@ namespace ChallengerPetCenter.Services
                     "O tutor informado não é o responsável por este pet.");
 
             var veterinarioExiste = await _context.Veterinarios
-                .AnyAsync(v => v.Id == dto.VeterinarioId);
+                .CountAsync(v => v.Id == dto.VeterinarioId) > 0;
 
             if (!veterinarioExiste)
                 return ServiceResult<SolicitacaoResponseDto>.Failure("Veterinário não encontrado.");

@@ -1,6 +1,7 @@
 using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Users;
 using ChallengerPetCenter.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChallengerPetCenter.Controllers
@@ -100,10 +101,12 @@ namespace ChallengerPetCenter.Controllers
         }
 
         /// <summary>
-        /// Remove um usuário.
+        /// Remove um usuário. Requer autenticação JWT.
         /// </summary>
         [HttpDelete("{id}")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteUser(int id)
         {

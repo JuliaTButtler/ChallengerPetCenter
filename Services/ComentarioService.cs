@@ -60,12 +60,12 @@ namespace ChallengerPetCenter.Services
         public async Task<ServiceResult<ComentarioResponseDto>> CreateAsync(CreateComentarioDto dto)
         {
             var diarioExiste = await _context.DiarioEntradas
-                .AnyAsync(d => d.Id == dto.DiarioEntradaId);
+                .CountAsync(d => d.Id == dto.DiarioEntradaId) > 0;
 
             if (!diarioExiste)
                 return ServiceResult<ComentarioResponseDto>.Failure("Entrada do diário não encontrada.");
 
-            var userExiste = await _context.Users.AnyAsync(u => u.Id == dto.UserId);
+            var userExiste = await _context.Users.CountAsync(u => u.Id == dto.UserId) > 0;
             if (!userExiste)
                 return ServiceResult<ComentarioResponseDto>.Failure("Usuário não encontrado.");
 

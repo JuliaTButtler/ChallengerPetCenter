@@ -68,19 +68,19 @@ namespace ChallengerPetCenter.Services
         public async Task<ServiceResult<VeterinarioResponseDto>> CreateAsync(CreateVeterinarioDto dto)
         {
             var crmvExiste = await _context.Veterinarios
-                .AnyAsync(v => v.Crmv == dto.Crmv);
+                .CountAsync(v => v.Crmv == dto.Crmv) > 0;
 
             if (crmvExiste)
                 return ServiceResult<VeterinarioResponseDto>.Failure("CRMV já cadastrado.");
 
             var userExiste = await _context.Users
-                .AnyAsync(u => u.Id == dto.UserId);
+                .CountAsync(u => u.Id == dto.UserId) > 0;
 
             if (!userExiste)
                 return ServiceResult<VeterinarioResponseDto>.Failure("Usuário não encontrado.");
 
             var userJaVinculado = await _context.Veterinarios
-                .AnyAsync(v => v.UserId == dto.UserId);
+                .CountAsync(v => v.UserId == dto.UserId) > 0;
 
             if (userJaVinculado)
                 return ServiceResult<VeterinarioResponseDto>.Failure("Este usuário já está vinculado a um veterinário.");
@@ -109,7 +109,7 @@ namespace ChallengerPetCenter.Services
                 return ServiceResult.AsNotFound("Veterinário não encontrado.");
 
             var crmvEmUso = await _context.Veterinarios
-                .AnyAsync(v => v.Crmv == dto.Crmv && v.Id != id);
+                .CountAsync(v => v.Crmv == dto.Crmv && v.Id != id) > 0;
 
             if (crmvEmUso)
                 return ServiceResult.Failure("CRMV já cadastrado.");

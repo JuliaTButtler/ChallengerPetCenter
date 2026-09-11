@@ -60,7 +60,7 @@ namespace ChallengerPetCenter.Services
         public async Task<ServiceResult<PetResponseDto>> CreateAsync(CreatePetDto dto)
         {
             var tutorExiste = await _context.Users
-                .AnyAsync(u => u.Id == dto.UserId);
+                .CountAsync(u => u.Id == dto.UserId) > 0;
 
             if (!tutorExiste)
                 return ServiceResult<PetResponseDto>.Failure("Tutor não encontrado.");
@@ -91,7 +91,7 @@ namespace ChallengerPetCenter.Services
                 return ServiceResult.AsNotFound("Pet não encontrado.");
 
             var tutorExiste = await _context.Users
-                .AnyAsync(u => u.Id == dto.UserId);
+                .CountAsync(u => u.Id == dto.UserId) > 0;
 
             if (!tutorExiste)
                 return ServiceResult.Failure("Tutor não encontrado.");

@@ -64,13 +64,13 @@ namespace ChallengerPetCenter.Services
 
         public async Task<ServiceResult<DiarioEntradaResponseDto>> CreateAsync(CreateDiarioEntradaDto dto)
         {
-            var petExiste = await _context.Pets.AnyAsync(p => p.Id == dto.PetId);
+            var petExiste = await _context.Pets.CountAsync(p => p.Id == dto.PetId) > 0;
             if (!petExiste)
                 return ServiceResult<DiarioEntradaResponseDto>.Failure("Pet não encontrado.");
 
             var data = dto.Data.Date;
             var entradaExiste = await _context.DiarioEntradas
-                .AnyAsync(d => d.PetId == dto.PetId && d.Data.Date == data);
+                .CountAsync(d => d.PetId == dto.PetId && d.Data.Date == data) > 0;
 
             if (entradaExiste)
                 return ServiceResult<DiarioEntradaResponseDto>.Failure(
@@ -105,10 +105,10 @@ namespace ChallengerPetCenter.Services
             if (existing.Data.Date != novaData)
             {
                 var conflito = await _context.DiarioEntradas
-                    .AnyAsync(d =>
+                    .CountAsync(d =>
                         d.Id != id &&
                         d.PetId == existing.PetId &&
-                        d.Data.Date == novaData);
+                        d.Data.Date == novaData) > 0;
 
                 if (conflito)
                     return ServiceResult.Failure(
