@@ -108,11 +108,12 @@ namespace ChallengerPetCenter.IntegrationTests
             // Arrange
             var email = $"del_{Guid.NewGuid():N}@email.com";
             var createResponse = await CreateUserAsync(email, "senha123");
-            var created = await createResponse.Content.ReadFromJsonAsync<UserResponseDto>(JsonOptions);
-            Assert.NotNull(created);
+            var payload = await createResponse.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+            var userId = payload.GetProperty("data").GetProperty("id").GetInt32();
+            Assert.True(userId > 0);
 
             var token = await LoginAndGetTokenAsync(email, "senha123");
-            var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/users/{created!.Id}");
+            var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/users/{userId}");
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             // Act

@@ -1,5 +1,6 @@
 using ChallengerPetCenter.DTOs.PetVeterinarios;
 using ChallengerPetCenter.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChallengerPetCenter.Controllers
@@ -87,6 +88,7 @@ namespace ChallengerPetCenter.Controllers
         /// <summary>
         /// Cria um novo vínculo entre pet e veterinário.
         /// </summary>
+        [Authorize]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -106,6 +108,7 @@ namespace ChallengerPetCenter.Controllers
         /// <summary>
         /// Atualiza um vínculo existente.
         /// </summary>
+        [Authorize]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -119,6 +122,7 @@ namespace ChallengerPetCenter.Controllers
         /// <summary>
         /// Remove um vínculo.
         /// </summary>
+        [Authorize]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

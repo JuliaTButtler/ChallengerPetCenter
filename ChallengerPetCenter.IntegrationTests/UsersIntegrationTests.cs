@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using ChallengerPetCenter.DTOs.Users;
 using ChallengerPetCenter.IntegrationTests.Fixtures;
 
@@ -9,6 +10,10 @@ namespace ChallengerPetCenter.IntegrationTests
     public class UsersIntegrationTests
     {
         private readonly HttpClient _client;
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
 
         public UsersIntegrationTests(CustomWebApplicationFactory factory)
         {
@@ -16,19 +21,20 @@ namespace ChallengerPetCenter.IntegrationTests
         }
 
         [Fact]
-        public async Task GetUsers_QuandoExistemUsuarios_RetornaOk()
+        public async Task GetUsers_QuandoExistemUsuarios_RetornaOkPaginadoComLinks()
         {
             // Arrange
             await CreateUserAsync($"list_{Guid.NewGuid():N}@email.com");
 
             // Act
-            var response = await _client.GetAsync("/api/users");
+            var response = await _client.GetAsync("/api/users?page=1&pageSize=10");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var users = await response.Content.ReadFromJsonAsync<List<UserResponseDto>>();
-            Assert.NotNull(users);
-            Assert.NotEmpty(users!);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Contains("items", body, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("_links", body, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("total", body, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]
@@ -72,9 +78,10 @@ namespace ChallengerPetCenter.IntegrationTests
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            var user = await response.Content.ReadFromJsonAsync<UserResponseDto>();
-            Assert.NotNull(user);
-            Assert.True(user!.Id > 0);
+            var payload = await response.Content.ReadFromJsonAsync<JsonElement>(JsonOptions);
+            Assert.True(payload.TryGetProperty("data", out var data));
+            Assert.True(data.GetProperty("id").GetInt32() > 0);
+            Assert.True(payload.TryGetProperty("_links", out _));
         }
 
         [Fact]
@@ -85,6 +92,21 @@ namespace ChallengerPetCenter.IntegrationTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task CreatePet_QuandoSemToken_RetornaUnauthorized()
+        {
+            // Arrange / Act
+            var response = await _client.PostAsJsonAsync("/api/pets", new
+            {
+                nome = "Mel",
+                especie = "Cachorro",
+                userId = 1
+            });
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
         private async Task<HttpResponseMessage> CreateUserAsync(string email)

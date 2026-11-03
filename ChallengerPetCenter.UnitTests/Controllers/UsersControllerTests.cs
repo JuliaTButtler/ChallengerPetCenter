@@ -1,5 +1,6 @@
 using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Controllers;
+using ChallengerPetCenter.DTOs.Common;
 using ChallengerPetCenter.DTOs.Users;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,7 @@ namespace ChallengerPetCenter.UnitTests.Controllers
         }
 
         [Fact]
-        public async Task GetUserById_QuandoUsuarioExiste_RetornaOk()
+        public async Task GetUserById_QuandoUsuarioExiste_RetornaOkComLinksHateoas()
         {
             // Arrange
             var mockService = new Mock<IUserService>();
@@ -48,8 +49,11 @@ namespace ChallengerPetCenter.UnitTests.Controllers
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-            var payload = Assert.IsType<UserResponseDto>(okResult.Value);
-            Assert.Equal(1, payload.Id);
+            var payload = Assert.IsType<ResourceResponseDto<UserResponseDto>>(okResult.Value);
+            Assert.Equal(1, payload.Data.Id);
+            Assert.Contains(payload.Links, l => l.Rel == "self");
+            Assert.Contains(payload.Links, l => l.Rel == "update");
+            Assert.Contains(payload.Links, l => l.Rel == "delete");
             mockService.Verify(s => s.GetByIdAsync(1), Times.Once);
         }
 
@@ -104,7 +108,7 @@ namespace ChallengerPetCenter.UnitTests.Controllers
         }
 
         [Fact]
-        public async Task CreateUser_QuandoDadosValidos_RetornaCreatedAtAction()
+        public async Task CreateUser_QuandoDadosValidos_RetornaCreatedAtActionComHateoas()
         {
             // Arrange
             var mockService = new Mock<IUserService>();
@@ -136,8 +140,40 @@ namespace ChallengerPetCenter.UnitTests.Controllers
             // Assert
             var createdResult = Assert.IsType<CreatedAtActionResult>(actionResult.Result);
             Assert.Equal(nameof(UsersController.GetUserById), createdResult.ActionName);
-            var payload = Assert.IsType<UserResponseDto>(createdResult.Value);
-            Assert.Equal(10, payload.Id);
+            var payload = Assert.IsType<ResourceResponseDto<UserResponseDto>>(createdResult.Value);
+            Assert.Equal(10, payload.Data.Id);
+            Assert.Contains(payload.Links, l => l.Rel == "self");
+        }
+
+        [Fact]
+        public async Task GetUsers_QuandoPaginado_RetornaLinksSelfNext()
+        {
+            // Arrange
+            var mockService = new Mock<IUserService>();
+            mockService
+                .Setup(s => s.GetAllAsync())
+                .ReturnsAsync(Enumerable.Range(1, 15).Select(i => new UserResponseDto
+                {
+                    Id = i,
+                    Nome = $"User{i}",
+                    Email = $"u{i}@email.com",
+                    TipoUsuario = "TUTOR",
+                    Ativo = 1
+                }));
+
+            var controller = CreateController(mockService.Object);
+
+            // Act
+            var actionResult = await controller.GetUsers(page: 1, pageSize: 10);
+
+            // Assert
+            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
+            var payload = Assert.IsType<PagedResponseDto<UserResponseDto>>(okResult.Value);
+            Assert.Equal(15, payload.Total);
+            Assert.Equal(10, payload.Items.Count);
+            Assert.Contains(payload.Links, l => l.Rel == "self");
+            Assert.Contains(payload.Links, l => l.Rel == "next");
+            Assert.DoesNotContain(payload.Links, l => l.Rel == "prev");
         }
     }
 }
