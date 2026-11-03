@@ -1,5 +1,5 @@
 using ChallengerPetCenter.Common;
-using ChallengerPetCenter.Data;
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.DTOs.Users;
 using ChallengerPetCenter.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +8,9 @@ namespace ChallengerPetCenter.Services
 {
     public class UserService : IUserService
     {
-        private readonly AppDbContext _context;
+        private readonly IAppDbContext _context;
 
-        public UserService(AppDbContext context)
+        public UserService(IAppDbContext context)
         {
             _context = context;
         }

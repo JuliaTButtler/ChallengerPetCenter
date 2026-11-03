@@ -1,5 +1,5 @@
 using ChallengerPetCenter.Common;
-using ChallengerPetCenter.Data;
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.DTOs.Veterinarios;
 using ChallengerPetCenter.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +8,9 @@ namespace ChallengerPetCenter.Services
 {
     public class VeterinarioService : IVeterinarioService
     {
-        private readonly AppDbContext _context;
+        private readonly IAppDbContext _context;
 
-        public VeterinarioService(AppDbContext context)
+        public VeterinarioService(IAppDbContext context)
         {
             _context = context;
         }

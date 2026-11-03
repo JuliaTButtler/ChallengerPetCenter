@@ -1,3 +1,4 @@
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -19,6 +20,7 @@ namespace ChallengerPetCenter.IntegrationTests.Fixtures
             {
                 services.RemoveAll(typeof(DbContextOptions<AppDbContext>));
                 services.RemoveAll(typeof(AppDbContext));
+                services.RemoveAll(typeof(IAppDbContext));
 
                 var efOptionsDescriptors = services
                     .Where(d =>
@@ -34,6 +36,9 @@ namespace ChallengerPetCenter.IntegrationTests.Fixtures
 
                 services.AddDbContext<AppDbContext>(options =>
                     options.UseInMemoryDatabase(_databaseName));
+
+                services.AddScoped<IAppDbContext>(sp =>
+                    sp.GetRequiredService<AppDbContext>());
             });
         }
     }

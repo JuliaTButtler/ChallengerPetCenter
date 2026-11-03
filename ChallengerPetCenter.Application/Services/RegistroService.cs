@@ -1,5 +1,5 @@
 using ChallengerPetCenter.Common;
-using ChallengerPetCenter.Data;
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.DTOs.Registros;
 using ChallengerPetCenter.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +8,9 @@ namespace ChallengerPetCenter.Services
 {
     public class RegistroService : IRegistroService
     {
-        private readonly AppDbContext _context;
+        private readonly IAppDbContext _context;
 
-        public RegistroService(AppDbContext context)
+        public RegistroService(IAppDbContext context)
         {
             _context = context;
         }

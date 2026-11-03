@@ -1,9 +1,10 @@
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChallengerPetCenter.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : DbContext, IAppDbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
@@ -12,21 +13,21 @@ namespace ChallengerPetCenter.Data
 
         // DbSets
 
-        public DbSet<User> Users { get; set; }
+        public DbSet<User> Users { get; set; } = null!;
 
-        public DbSet<Veterinario> Veterinarios { get; set; }
+        public DbSet<Veterinario> Veterinarios { get; set; } = null!;
 
-        public DbSet<Pet> Pets { get; set; }
+        public DbSet<Pet> Pets { get; set; } = null!;
 
-        public DbSet<PetVeterinario> PetVeterinarios { get; set; }
+        public DbSet<PetVeterinario> PetVeterinarios { get; set; } = null!;
 
-        public DbSet<DiarioEntrada> DiarioEntradas { get; set; }
+        public DbSet<DiarioEntrada> DiarioEntradas { get; set; } = null!;
 
-        public DbSet<Registro> Registros { get; set; }
+        public DbSet<Registro> Registros { get; set; } = null!;
 
-        public DbSet<Comentario> Comentarios { get; set; }
+        public DbSet<Comentario> Comentarios { get; set; } = null!;
 
-        public DbSet<Solicitacao> Solicitacoes { get; set; }
+        public DbSet<Solicitacao> Solicitacoes { get; set; } = null!;
 
         // Configurações das entidades
 

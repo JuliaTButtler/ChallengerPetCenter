@@ -4,7 +4,6 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -24,7 +23,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ChallengerPetCenter.csproj" />
+    <ProjectReference Include="..\ChallengerPetCenter.API\ChallengerPetCenter.API.csproj" />
+    <ProjectReference Include="..\ChallengerPetCenter.Application\ChallengerPetCenter.Application.csproj" />
+    <ProjectReference Include="..\ChallengerPetCenter.Infrastructure\ChallengerPetCenter.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

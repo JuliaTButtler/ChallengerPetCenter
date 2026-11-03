@@ -1,5 +1,5 @@
 using ChallengerPetCenter.Common;
-using ChallengerPetCenter.Data;
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.DTOs.Solicitacoes;
 using ChallengerPetCenter.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +8,9 @@ namespace ChallengerPetCenter.Services
 {
     public class SolicitacaoService : ISolicitacaoService
     {
-        private readonly AppDbContext _context;
+        private readonly IAppDbContext _context;
 
-        public SolicitacaoService(AppDbContext context)
+        public SolicitacaoService(IAppDbContext context)
         {
             _context = context;
         }

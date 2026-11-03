@@ -1,5 +1,5 @@
 using ChallengerPetCenter.Common;
-using ChallengerPetCenter.Data;
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.DTOs.Comentarios;
 using ChallengerPetCenter.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +8,9 @@ namespace ChallengerPetCenter.Services
 {
     public class ComentarioService : IComentarioService
     {
-        private readonly AppDbContext _context;
+        private readonly IAppDbContext _context;
 
-        public ComentarioService(AppDbContext context)
+        public ComentarioService(IAppDbContext context)
         {
             _context = context;
         }

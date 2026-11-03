@@ -1,5 +1,5 @@
 using ChallengerPetCenter.Common;
-using ChallengerPetCenter.Data;
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.DTOs.DiarioEntradas;
 using ChallengerPetCenter.Models;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +8,9 @@ namespace ChallengerPetCenter.Services
 {
     public class DiarioEntradaService : IDiarioEntradaService
     {
-        private readonly AppDbContext _context;
+        private readonly IAppDbContext _context;
 
-        public DiarioEntradaService(AppDbContext context)
+        public DiarioEntradaService(IAppDbContext context)
         {
             _context = context;
         }

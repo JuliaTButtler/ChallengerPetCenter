@@ -1,15 +1,16 @@
-using System.Text;
 using System.IdentityModel.Tokens.Jwt;
+using System.Reflection;
 using System.Security.Claims;
+using System.Text;
+using ChallengerPetCenter.Application;
 using ChallengerPetCenter.Configuration;
 using ChallengerPetCenter.Data;
 using ChallengerPetCenter.HealthChecks;
+using ChallengerPetCenter.Infrastructure;
 using ChallengerPetCenter.Middleware;
-using ChallengerPetCenter.Services;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -18,8 +19,6 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
-
-using System.Reflection;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -40,7 +39,6 @@ try
     var exportToConsole = builder.Configuration.GetValue(
         "OpenTelemetry:EnableConsoleExporters", true);
 
-    // OpenTelemetry — tracing + métricas (export console, sem cloud)
     builder.Services.AddOpenTelemetry()
         .ConfigureResource(resource => resource
             .AddService(serviceName: otelServiceName))
@@ -78,10 +76,8 @@ try
             }
         });
 
-    // Controllers
     builder.Services.AddControllers();
 
-    // JWT
     builder.Services.Configure<JwtSettings>(
         builder.Configuration.GetSection(JwtSettings.SectionName));
 
@@ -119,18 +115,9 @@ try
 
     builder.Services.AddAuthorization();
 
-    // Services
-    builder.Services.AddScoped<IAuthService, AuthService>();
-    builder.Services.AddScoped<IUserService, UserService>();
-    builder.Services.AddScoped<IPetService, PetService>();
-    builder.Services.AddScoped<IVeterinarioService, VeterinarioService>();
-    builder.Services.AddScoped<IPetVeterinarioService, PetVeterinarioService>();
-    builder.Services.AddScoped<IDiarioEntradaService, DiarioEntradaService>();
-    builder.Services.AddScoped<IRegistroService, RegistroService>();
-    builder.Services.AddScoped<IComentarioService, ComentarioService>();
-    builder.Services.AddScoped<ISolicitacaoService, SolicitacaoService>();
+    builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
 
-    // Swagger + Bearer
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(options =>
     {
@@ -156,12 +143,6 @@ try
         });
     });
 
-    // DbContext Oracle
-    builder.Services.AddDbContext<AppDbContext>(options =>
-        options.UseOracle(
-            builder.Configuration.GetConnectionString("OracleConnection")));
-
-    // Health Checks
     builder.Services.Configure<ExternalServiceHealthCheckOptions>(
         builder.Configuration.GetSection(ExternalServiceHealthCheckOptions.SectionName));
 
@@ -200,15 +181,11 @@ try
                     : Serilog.Events.LogEventLevel.Information;
     });
 
-    // Swagger
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI();
     }
-
-    // HTTPS
-    // app.UseHttpsRedirection();
 
     app.UseAuthentication();
     app.UseAuthorization();
@@ -220,18 +197,15 @@ try
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
     };
 
-    // Visão geral: todos os checks
     app.MapHealthChecks("/health", healthJsonOptions);
     app.MapHealthChecks("/healthz", healthJsonOptions);
 
-    // Liveness: processo da API
     app.MapHealthChecks("/health/live", new HealthCheckOptions
     {
         Predicate = check => check.Tags.Contains("live"),
         ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
     });
 
-    // Readiness: Oracle + serviço externo
     app.MapHealthChecks("/health/ready", new HealthCheckOptions
     {
         Predicate = check => check.Tags.Contains("ready"),
@@ -252,5 +226,4 @@ finally
     Log.CloseAndFlush();
 }
 
-// Necessário para WebApplicationFactory nos testes de integração
 public partial class Program { }

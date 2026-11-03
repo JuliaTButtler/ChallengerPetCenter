@@ -3,7 +3,7 @@ using System.Security.Claims;
 using System.Text;
 using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Configuration;
-using ChallengerPetCenter.Data;
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.DTOs.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -13,10 +13,10 @@ namespace ChallengerPetCenter.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly AppDbContext _context;
+        private readonly IAppDbContext _context;
         private readonly JwtSettings _jwt;
 
-        public AuthService(AppDbContext context, IOptions<JwtSettings> jwtOptions)
+        public AuthService(IAppDbContext context, IOptions<JwtSettings> jwtOptions)
         {
             _context = context;
             _jwt = jwtOptions.Value;
