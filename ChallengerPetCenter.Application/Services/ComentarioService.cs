@@ -12,17 +12,20 @@ namespace ChallengerPetCenter.Services
         private readonly IDiarioEntradaRepository _diarioEntradas;
         private readonly IUserRepository _users;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogService _audit;
 
         public ComentarioService(
             IComentarioRepository comentarios,
             IDiarioEntradaRepository diarioEntradas,
             IUserRepository users,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IAuditLogService audit)
         {
             _comentarios = comentarios;
             _diarioEntradas = diarioEntradas;
             _users = users;
             _unitOfWork = unitOfWork;
+            _audit = audit;
         }
 
         public async Task<IEnumerable<ComentarioResponseDto>> GetAllAsync()
@@ -77,6 +80,12 @@ namespace ChallengerPetCenter.Services
             await _comentarios.AddAsync(comentario);
             await _unitOfWork.SaveChangesAsync();
 
+            await _audit.WriteAsync(
+                "COMENTARIO_CREATED",
+                "Comentario",
+                comentario.Id.ToString(),
+                new { comentario.DiarioEntradaId, comentario.UserId });
+
             return ServiceResult<ComentarioResponseDto>.Success(MapToDto(comentario));
         }
 
@@ -93,6 +102,11 @@ namespace ChallengerPetCenter.Services
             existing.EditadoEm = DateTime.Now;
 
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "COMENTARIO_UPDATED",
+                "Comentario",
+                id.ToString());
             return ServiceResult.Success();
         }
 
@@ -104,6 +118,11 @@ namespace ChallengerPetCenter.Services
 
             _comentarios.Remove(comentario);
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "COMENTARIO_DELETED",
+                "Comentario",
+                id.ToString());
             return ServiceResult.Success();
         }
 

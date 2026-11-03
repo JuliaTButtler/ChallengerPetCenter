@@ -11,15 +11,18 @@ namespace ChallengerPetCenter.Services
         private readonly IDiarioEntradaRepository _diarioEntradas;
         private readonly IPetRepository _pets;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogService _audit;
 
         public DiarioEntradaService(
             IDiarioEntradaRepository diarioEntradas,
             IPetRepository pets,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IAuditLogService audit)
         {
             _diarioEntradas = diarioEntradas;
             _pets = pets;
             _unitOfWork = unitOfWork;
+            _audit = audit;
         }
 
         public async Task<IEnumerable<DiarioEntradaResponseDto>> GetAllAsync()
@@ -78,6 +81,12 @@ namespace ChallengerPetCenter.Services
             await _diarioEntradas.AddAsync(entrada);
             await _unitOfWork.SaveChangesAsync();
 
+            await _audit.WriteAsync(
+                "DIARIO_CREATED",
+                "DiarioEntrada",
+                entrada.Id.ToString(),
+                new { entrada.PetId, entrada.Data, entrada.HumorGeral, entrada.Status });
+
             return ServiceResult<DiarioEntradaResponseDto>.Success(MapToDto(entrada));
         }
 
@@ -105,6 +114,12 @@ namespace ChallengerPetCenter.Services
             existing.AtualizadoEm = DateTime.Now;
 
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "DIARIO_UPDATED",
+                "DiarioEntrada",
+                id.ToString(),
+                new { dto.Data, dto.HumorGeral, dto.Status });
             return ServiceResult.Success();
         }
 
@@ -116,6 +131,12 @@ namespace ChallengerPetCenter.Services
 
             _diarioEntradas.Remove(entrada);
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "DIARIO_DELETED",
+                "DiarioEntrada",
+                id.ToString(),
+                new { entrada.PetId });
             return ServiceResult.Success();
         }
 

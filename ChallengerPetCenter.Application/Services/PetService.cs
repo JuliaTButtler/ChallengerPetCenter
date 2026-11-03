@@ -11,15 +11,18 @@ namespace ChallengerPetCenter.Services
         private readonly IPetRepository _pets;
         private readonly IUserRepository _users;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogService _audit;
 
         public PetService(
             IPetRepository pets,
             IUserRepository users,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IAuditLogService audit)
         {
             _pets = pets;
             _users = users;
             _unitOfWork = unitOfWork;
+            _audit = audit;
         }
 
         public async Task<IEnumerable<PetResponseDto>> GetAllAsync()
@@ -73,6 +76,12 @@ namespace ChallengerPetCenter.Services
             await _pets.AddAsync(pet);
             await _unitOfWork.SaveChangesAsync();
 
+            await _audit.WriteAsync(
+                "PET_CREATED",
+                "Pet",
+                pet.Id.ToString(),
+                new { pet.Nome, pet.Especie, pet.UserId });
+
             return ServiceResult<PetResponseDto>.Success(MapToDto(pet));
         }
 
@@ -96,6 +105,13 @@ namespace ChallengerPetCenter.Services
             existingPet.UserId = dto.UserId;
 
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "PET_UPDATED",
+                "Pet",
+                id.ToString(),
+                new { dto.Nome, dto.Especie, dto.UserId });
+
             return ServiceResult.Success();
         }
 
@@ -107,6 +123,13 @@ namespace ChallengerPetCenter.Services
 
             _pets.Remove(pet);
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "PET_DELETED",
+                "Pet",
+                id.ToString(),
+                new { pet.Nome });
+
             return ServiceResult.Success();
         }
 

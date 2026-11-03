@@ -16,6 +16,7 @@ namespace ChallengerPetCenter.Application
             services.AddScoped<IRegistroService, RegistroService>();
             services.AddScoped<IComentarioService, ComentarioService>();
             services.AddScoped<ISolicitacaoService, SolicitacaoService>();
+            // IAuditLogService é registrado na Infrastructure (Mongo ou NoOp)
 
             return services;
         }

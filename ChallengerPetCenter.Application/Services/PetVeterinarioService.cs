@@ -12,17 +12,20 @@ namespace ChallengerPetCenter.Services
         private readonly IPetRepository _pets;
         private readonly IVeterinarioRepository _veterinarios;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogService _audit;
 
         public PetVeterinarioService(
             IPetVeterinarioRepository petVeterinarios,
             IPetRepository pets,
             IVeterinarioRepository veterinarios,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IAuditLogService audit)
         {
             _petVeterinarios = petVeterinarios;
             _pets = pets;
             _veterinarios = veterinarios;
             _unitOfWork = unitOfWork;
+            _audit = audit;
         }
 
         public async Task<IEnumerable<PetVeterinarioResponseDto>> GetAllAsync()
@@ -82,6 +85,12 @@ namespace ChallengerPetCenter.Services
             await _petVeterinarios.AddAsync(petVeterinario);
             await _unitOfWork.SaveChangesAsync();
 
+            await _audit.WriteAsync(
+                "PET_VETERINARIO_CREATED",
+                "PetVeterinario",
+                petVeterinario.Id.ToString(),
+                new { petVeterinario.PetId, petVeterinario.VeterinarioId });
+
             return ServiceResult<PetVeterinarioResponseDto>.Success(MapToDto(petVeterinario));
         }
 
@@ -108,6 +117,12 @@ namespace ChallengerPetCenter.Services
             existing.Observacoes = dto.Observacoes;
 
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "PET_VETERINARIO_UPDATED",
+                "PetVeterinario",
+                id.ToString(),
+                new { dto.Ativo });
             return ServiceResult.Success();
         }
 
@@ -119,6 +134,12 @@ namespace ChallengerPetCenter.Services
 
             _petVeterinarios.Remove(item);
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "PET_VETERINARIO_DELETED",
+                "PetVeterinario",
+                id.ToString(),
+                new { item.PetId, item.VeterinarioId });
             return ServiceResult.Success();
         }
 

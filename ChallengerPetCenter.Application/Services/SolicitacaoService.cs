@@ -13,19 +13,22 @@ namespace ChallengerPetCenter.Services
         private readonly IUserRepository _users;
         private readonly IVeterinarioRepository _veterinarios;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogService _audit;
 
         public SolicitacaoService(
             ISolicitacaoRepository solicitacoes,
             IPetRepository pets,
             IUserRepository users,
             IVeterinarioRepository veterinarios,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IAuditLogService audit)
         {
             _solicitacoes = solicitacoes;
             _pets = pets;
             _users = users;
             _veterinarios = veterinarios;
             _unitOfWork = unitOfWork;
+            _audit = audit;
         }
 
         public async Task<IEnumerable<SolicitacaoResponseDto>> GetAllAsync()
@@ -100,6 +103,12 @@ namespace ChallengerPetCenter.Services
             await _solicitacoes.AddAsync(solicitacao);
             await _unitOfWork.SaveChangesAsync();
 
+            await _audit.WriteAsync(
+                "SOLICITACAO_CREATED",
+                "Solicitacao",
+                solicitacao.Id.ToString(),
+                new { solicitacao.PetId, solicitacao.TutorId, solicitacao.VeterinarioId, solicitacao.Status });
+
             return ServiceResult<SolicitacaoResponseDto>.Success(MapToDto(solicitacao));
         }
 
@@ -130,6 +139,12 @@ namespace ChallengerPetCenter.Services
             }
 
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "SOLICITACAO_UPDATED",
+                "Solicitacao",
+                id.ToString(),
+                new { dto.Status });
             return ServiceResult.Success();
         }
 
@@ -141,6 +156,12 @@ namespace ChallengerPetCenter.Services
 
             _solicitacoes.Remove(solicitacao);
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "SOLICITACAO_DELETED",
+                "Solicitacao",
+                id.ToString(),
+                new { solicitacao.Status });
             return ServiceResult.Success();
         }
 

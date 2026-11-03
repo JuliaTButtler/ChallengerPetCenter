@@ -11,15 +11,18 @@ namespace ChallengerPetCenter.Services
         private readonly IRegistroRepository _registros;
         private readonly IDiarioEntradaRepository _diarioEntradas;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogService _audit;
 
         public RegistroService(
             IRegistroRepository registros,
             IDiarioEntradaRepository diarioEntradas,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IAuditLogService audit)
         {
             _registros = registros;
             _diarioEntradas = diarioEntradas;
             _unitOfWork = unitOfWork;
+            _audit = audit;
         }
 
         public async Task<IEnumerable<RegistroResponseDto>> GetAllAsync()
@@ -74,6 +77,12 @@ namespace ChallengerPetCenter.Services
             await _registros.AddAsync(registro);
             await _unitOfWork.SaveChangesAsync();
 
+            await _audit.WriteAsync(
+                "REGISTRO_CREATED",
+                "Registro",
+                registro.Id.ToString(),
+                new { registro.Tipo, registro.DiarioEntradaId });
+
             return ServiceResult<RegistroResponseDto>.Success(MapToDto(registro));
         }
 
@@ -95,6 +104,12 @@ namespace ChallengerPetCenter.Services
             existing.AtualizadoEm = DateTime.Now;
 
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "REGISTRO_UPDATED",
+                "Registro",
+                id.ToString(),
+                new { dto.Tipo });
             return ServiceResult.Success();
         }
 
@@ -106,6 +121,12 @@ namespace ChallengerPetCenter.Services
 
             _registros.Remove(registro);
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "REGISTRO_DELETED",
+                "Registro",
+                id.ToString(),
+                new { registro.Tipo });
             return ServiceResult.Success();
         }
 

@@ -11,15 +11,18 @@ namespace ChallengerPetCenter.Services
         private readonly IVeterinarioRepository _veterinarios;
         private readonly IUserRepository _users;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogService _audit;
 
         public VeterinarioService(
             IVeterinarioRepository veterinarios,
             IUserRepository users,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IAuditLogService audit)
         {
             _veterinarios = veterinarios;
             _users = users;
             _unitOfWork = unitOfWork;
+            _audit = audit;
         }
 
         public async Task<IEnumerable<VeterinarioResponseDto>> GetAllAsync()
@@ -84,6 +87,12 @@ namespace ChallengerPetCenter.Services
             await _veterinarios.AddAsync(veterinario);
             await _unitOfWork.SaveChangesAsync();
 
+            await _audit.WriteAsync(
+                "VETERINARIO_CREATED",
+                "Veterinario",
+                veterinario.Id.ToString(),
+                new { veterinario.Crmv, veterinario.UserId });
+
             return ServiceResult<VeterinarioResponseDto>.Success(MapToDto(veterinario));
         }
 
@@ -104,6 +113,12 @@ namespace ChallengerPetCenter.Services
             existing.Descricao = dto.Descricao;
 
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "VETERINARIO_UPDATED",
+                "Veterinario",
+                id.ToString(),
+                new { dto.Crmv });
             return ServiceResult.Success();
         }
 
@@ -115,6 +130,12 @@ namespace ChallengerPetCenter.Services
 
             _veterinarios.Remove(veterinario);
             await _unitOfWork.SaveChangesAsync();
+
+            await _audit.WriteAsync(
+                "VETERINARIO_DELETED",
+                "Veterinario",
+                id.ToString(),
+                new { veterinario.Crmv });
             return ServiceResult.Success();
         }
 
