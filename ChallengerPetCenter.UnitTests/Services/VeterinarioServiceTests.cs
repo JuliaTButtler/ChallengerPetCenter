@@ -1,5 +1,6 @@
 using ChallengerPetCenter.DTOs.Veterinarios;
 using ChallengerPetCenter.Models;
+using ChallengerPetCenter.Data;
 using ChallengerPetCenter.Services;
 using ChallengerPetCenter.UnitTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -45,7 +46,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             });
             await context.SaveChangesAsync();
 
-            var service = new VeterinarioService(context);
+            var service = _fixture.CreateServices(context).Veterinarios;
             var dto = new CreateVeterinarioDto
             {
                 Crmv = "SP-12345",
@@ -82,7 +83,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             });
             await context.SaveChangesAsync();
 
-            var service = new VeterinarioService(context);
+            var service = _fixture.CreateServices(context).Veterinarios;
             var dto = new CreateVeterinarioDto
             {
                 Crmv = "SP-222",
@@ -112,7 +113,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             context.Users.Add(user);
             await context.SaveChangesAsync();
 
-            var service = new VeterinarioService(context);
+            var service = _fixture.CreateServices(context).Veterinarios;
             var dto = new CreateVeterinarioDto
             {
                 Crmv = "SP-99999",

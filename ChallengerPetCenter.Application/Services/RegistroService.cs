@@ -1,29 +1,36 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Abstractions;
+using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Registros;
 using ChallengerPetCenter.Models;
-using Microsoft.EntityFrameworkCore;
+using ChallengerPetCenter.Repositories;
 
 namespace ChallengerPetCenter.Services
 {
     public class RegistroService : IRegistroService
     {
-        private readonly IAppDbContext _context;
+        private readonly IRegistroRepository _registros;
+        private readonly IDiarioEntradaRepository _diarioEntradas;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public RegistroService(IAppDbContext context)
+        public RegistroService(
+            IRegistroRepository registros,
+            IDiarioEntradaRepository diarioEntradas,
+            IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _registros = registros;
+            _diarioEntradas = diarioEntradas;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<RegistroResponseDto>> GetAllAsync()
         {
-            var registros = await _context.Registros.ToListAsync();
+            var registros = await _registros.GetAllAsync();
             return registros.Select(MapToDto);
         }
 
         public async Task<ServiceResult<RegistroResponseDto>> GetByIdAsync(int id)
         {
-            var registro = await _context.Registros.FindAsync(id);
+            var registro = await _registros.GetByIdAsync(id);
             if (registro == null)
                 return ServiceResult<RegistroResponseDto>.AsNotFound("Registro não encontrado.");
 
@@ -32,39 +39,25 @@ namespace ChallengerPetCenter.Services
 
         public async Task<IEnumerable<RegistroResponseDto>> GetByDiarioAsync(int diarioEntradaId)
         {
-            var registros = await _context.Registros
-                .Where(r => r.DiarioEntradaId == diarioEntradaId)
-                .ToListAsync();
-
+            var registros = await _registros.GetByDiarioAsync(diarioEntradaId);
             return registros.Select(MapToDto);
         }
 
         public async Task<IEnumerable<RegistroResponseDto>> GetByTipoAsync(string tipo)
         {
-            var registros = await _context.Registros
-                .Where(r => r.Tipo.ToUpper() == tipo.ToUpper())
-                .ToListAsync();
-
+            var registros = await _registros.GetByTipoAsync(tipo);
             return registros.Select(MapToDto);
         }
 
         public async Task<IEnumerable<RegistroResponseDto>> GetBySubtipoAsync(string subtipo)
         {
-            var registros = await _context.Registros
-                .Where(r =>
-                    r.Subtipo != null &&
-                    r.Subtipo.ToUpper() == subtipo.ToUpper())
-                .ToListAsync();
-
+            var registros = await _registros.GetBySubtipoAsync(subtipo);
             return registros.Select(MapToDto);
         }
 
         public async Task<ServiceResult<RegistroResponseDto>> CreateAsync(CreateRegistroDto dto)
         {
-            var diarioExiste = await _context.DiarioEntradas
-                .CountAsync(d => d.Id == dto.DiarioEntradaId) > 0;
-
-            if (!diarioExiste)
+            if (!await _diarioEntradas.ExistsAsync(dto.DiarioEntradaId))
                 return ServiceResult<RegistroResponseDto>.Failure("Entrada do diário não encontrada.");
 
             var registro = new Registro
@@ -78,8 +71,8 @@ namespace ChallengerPetCenter.Services
                 DiarioEntradaId = dto.DiarioEntradaId
             };
 
-            _context.Registros.Add(registro);
-            await _context.SaveChangesAsync();
+            await _registros.AddAsync(registro);
+            await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult<RegistroResponseDto>.Success(MapToDto(registro));
         }
@@ -89,7 +82,7 @@ namespace ChallengerPetCenter.Services
             if (id != dto.Id)
                 return ServiceResult.Failure("ID da rota diferente do ID enviado.");
 
-            var existing = await _context.Registros.FindAsync(id);
+            var existing = await _registros.GetByIdAsync(id);
             if (existing == null)
                 return ServiceResult.AsNotFound("Registro não encontrado.");
 
@@ -101,18 +94,18 @@ namespace ChallengerPetCenter.Services
             existing.Horario = dto.Horario;
             existing.AtualizadoEm = DateTime.Now;
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 
         public async Task<ServiceResult> DeleteAsync(int id)
         {
-            var registro = await _context.Registros.FindAsync(id);
+            var registro = await _registros.GetByIdAsync(id);
             if (registro == null)
                 return ServiceResult.AsNotFound("Registro não encontrado.");
 
-            _context.Registros.Remove(registro);
-            await _context.SaveChangesAsync();
+            _registros.Remove(registro);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 

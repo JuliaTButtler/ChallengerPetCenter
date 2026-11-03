@@ -1,29 +1,39 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Abstractions;
+using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Comentarios;
 using ChallengerPetCenter.Models;
-using Microsoft.EntityFrameworkCore;
+using ChallengerPetCenter.Repositories;
 
 namespace ChallengerPetCenter.Services
 {
     public class ComentarioService : IComentarioService
     {
-        private readonly IAppDbContext _context;
+        private readonly IComentarioRepository _comentarios;
+        private readonly IDiarioEntradaRepository _diarioEntradas;
+        private readonly IUserRepository _users;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public ComentarioService(IAppDbContext context)
+        public ComentarioService(
+            IComentarioRepository comentarios,
+            IDiarioEntradaRepository diarioEntradas,
+            IUserRepository users,
+            IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _comentarios = comentarios;
+            _diarioEntradas = diarioEntradas;
+            _users = users;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<ComentarioResponseDto>> GetAllAsync()
         {
-            var comentarios = await _context.Comentarios.ToListAsync();
+            var comentarios = await _comentarios.GetAllAsync();
             return comentarios.Select(MapToDto);
         }
 
         public async Task<ServiceResult<ComentarioResponseDto>> GetByIdAsync(int id)
         {
-            var comentario = await _context.Comentarios.FindAsync(id);
+            var comentario = await _comentarios.GetByIdAsync(id);
             if (comentario == null)
                 return ServiceResult<ComentarioResponseDto>.AsNotFound("Comentário não encontrado.");
 
@@ -32,41 +42,28 @@ namespace ChallengerPetCenter.Services
 
         public async Task<IEnumerable<ComentarioResponseDto>> GetByDiarioAsync(int diarioEntradaId)
         {
-            var comentarios = await _context.Comentarios
-                .Where(c => c.DiarioEntradaId == diarioEntradaId)
-                .ToListAsync();
-
+            var comentarios = await _comentarios.GetByDiarioAsync(diarioEntradaId);
             return comentarios.Select(MapToDto);
         }
 
         public async Task<IEnumerable<ComentarioResponseDto>> GetByUserAsync(int userId)
         {
-            var comentarios = await _context.Comentarios
-                .Where(c => c.UserId == userId)
-                .ToListAsync();
-
+            var comentarios = await _comentarios.GetByUserAsync(userId);
             return comentarios.Select(MapToDto);
         }
 
         public async Task<IEnumerable<ComentarioResponseDto>> GetByTextoAsync(string texto)
         {
-            var comentarios = await _context.Comentarios
-                .Where(c => c.TextoComentario.ToUpper().Contains(texto.ToUpper()))
-                .ToListAsync();
-
+            var comentarios = await _comentarios.GetByTextoAsync(texto);
             return comentarios.Select(MapToDto);
         }
 
         public async Task<ServiceResult<ComentarioResponseDto>> CreateAsync(CreateComentarioDto dto)
         {
-            var diarioExiste = await _context.DiarioEntradas
-                .CountAsync(d => d.Id == dto.DiarioEntradaId) > 0;
-
-            if (!diarioExiste)
+            if (!await _diarioEntradas.ExistsAsync(dto.DiarioEntradaId))
                 return ServiceResult<ComentarioResponseDto>.Failure("Entrada do diário não encontrada.");
 
-            var userExiste = await _context.Users.CountAsync(u => u.Id == dto.UserId) > 0;
-            if (!userExiste)
+            if (!await _users.ExistsAsync(dto.UserId))
                 return ServiceResult<ComentarioResponseDto>.Failure("Usuário não encontrado.");
 
             var comentario = new Comentario
@@ -77,8 +74,8 @@ namespace ChallengerPetCenter.Services
                 CriadoEm = DateTime.Now
             };
 
-            _context.Comentarios.Add(comentario);
-            await _context.SaveChangesAsync();
+            await _comentarios.AddAsync(comentario);
+            await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult<ComentarioResponseDto>.Success(MapToDto(comentario));
         }
@@ -88,25 +85,25 @@ namespace ChallengerPetCenter.Services
             if (id != dto.Id)
                 return ServiceResult.Failure("ID da rota diferente do ID enviado.");
 
-            var existing = await _context.Comentarios.FindAsync(id);
+            var existing = await _comentarios.GetByIdAsync(id);
             if (existing == null)
                 return ServiceResult.AsNotFound("Comentário não encontrado.");
 
             existing.TextoComentario = dto.TextoComentario;
             existing.EditadoEm = DateTime.Now;
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 
         public async Task<ServiceResult> DeleteAsync(int id)
         {
-            var comentario = await _context.Comentarios.FindAsync(id);
+            var comentario = await _comentarios.GetByIdAsync(id);
             if (comentario == null)
                 return ServiceResult.AsNotFound("Comentário não encontrado.");
 
-            _context.Comentarios.Remove(comentario);
-            await _context.SaveChangesAsync();
+            _comentarios.Remove(comentario);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 

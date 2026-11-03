@@ -1,29 +1,36 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Abstractions;
+using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Pets;
 using ChallengerPetCenter.Models;
-using Microsoft.EntityFrameworkCore;
+using ChallengerPetCenter.Repositories;
 
 namespace ChallengerPetCenter.Services
 {
     public class PetService : IPetService
     {
-        private readonly IAppDbContext _context;
+        private readonly IPetRepository _pets;
+        private readonly IUserRepository _users;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PetService(IAppDbContext context)
+        public PetService(
+            IPetRepository pets,
+            IUserRepository users,
+            IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _pets = pets;
+            _users = users;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<PetResponseDto>> GetAllAsync()
         {
-            var pets = await _context.Pets.ToListAsync();
+            var pets = await _pets.GetAllAsync();
             return pets.Select(MapToDto);
         }
 
         public async Task<ServiceResult<PetResponseDto>> GetByIdAsync(int id)
         {
-            var pet = await _context.Pets.FindAsync(id);
+            var pet = await _pets.GetByIdAsync(id);
             if (pet == null)
                 return ServiceResult<PetResponseDto>.AsNotFound("Pet não encontrado.");
 
@@ -32,37 +39,25 @@ namespace ChallengerPetCenter.Services
 
         public async Task<IEnumerable<PetResponseDto>> GetByUserAsync(int userId)
         {
-            var pets = await _context.Pets
-                .Where(p => p.UserId == userId)
-                .ToListAsync();
-
+            var pets = await _pets.GetByUserAsync(userId);
             return pets.Select(MapToDto);
         }
 
         public async Task<IEnumerable<PetResponseDto>> GetByEspecieAsync(string especie)
         {
-            var pets = await _context.Pets
-                .Where(p => p.Especie.ToUpper() == especie.ToUpper())
-                .ToListAsync();
-
+            var pets = await _pets.GetByEspecieAsync(especie);
             return pets.Select(MapToDto);
         }
 
         public async Task<IEnumerable<PetResponseDto>> GetByNomeAsync(string nome)
         {
-            var pets = await _context.Pets
-                .Where(p => p.Nome.ToUpper().Contains(nome.ToUpper()))
-                .ToListAsync();
-
+            var pets = await _pets.GetByNomeAsync(nome);
             return pets.Select(MapToDto);
         }
 
         public async Task<ServiceResult<PetResponseDto>> CreateAsync(CreatePetDto dto)
         {
-            var tutorExiste = await _context.Users
-                .CountAsync(u => u.Id == dto.UserId) > 0;
-
-            if (!tutorExiste)
+            if (!await _users.ExistsAsync(dto.UserId))
                 return ServiceResult<PetResponseDto>.Failure("Tutor não encontrado.");
 
             var pet = new Pet
@@ -75,8 +70,8 @@ namespace ChallengerPetCenter.Services
                 UserId = dto.UserId
             };
 
-            _context.Pets.Add(pet);
-            await _context.SaveChangesAsync();
+            await _pets.AddAsync(pet);
+            await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult<PetResponseDto>.Success(MapToDto(pet));
         }
@@ -86,14 +81,11 @@ namespace ChallengerPetCenter.Services
             if (id != dto.Id)
                 return ServiceResult.Failure("ID da rota diferente do ID enviado.");
 
-            var existingPet = await _context.Pets.FindAsync(id);
+            var existingPet = await _pets.GetByIdAsync(id);
             if (existingPet == null)
                 return ServiceResult.AsNotFound("Pet não encontrado.");
 
-            var tutorExiste = await _context.Users
-                .CountAsync(u => u.Id == dto.UserId) > 0;
-
-            if (!tutorExiste)
+            if (!await _users.ExistsAsync(dto.UserId))
                 return ServiceResult.Failure("Tutor não encontrado.");
 
             existingPet.Nome = dto.Nome;
@@ -103,18 +95,18 @@ namespace ChallengerPetCenter.Services
             existingPet.Observacoes = dto.Observacoes;
             existingPet.UserId = dto.UserId;
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 
         public async Task<ServiceResult> DeleteAsync(int id)
         {
-            var pet = await _context.Pets.FindAsync(id);
+            var pet = await _pets.GetByIdAsync(id);
             if (pet == null)
                 return ServiceResult.AsNotFound("Pet não encontrado.");
 
-            _context.Pets.Remove(pet);
-            await _context.SaveChangesAsync();
+            _pets.Remove(pet);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 

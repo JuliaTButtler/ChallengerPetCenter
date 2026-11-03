@@ -1,5 +1,6 @@
 using ChallengerPetCenter.DTOs.DiarioEntradas;
 using ChallengerPetCenter.Models;
+using ChallengerPetCenter.Data;
 using ChallengerPetCenter.Services;
 using ChallengerPetCenter.UnitTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             // Arrange
             await using var context = _fixture.CreateContext();
             var pet = await SeedPetAsync(context);
-            var service = new DiarioEntradaService(context);
+            var service = _fixture.CreateServices(context).DiarioEntradas;
             var dto = new CreateDiarioEntradaDto
             {
                 PetId = pet.Id,
@@ -58,7 +59,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             });
             await context.SaveChangesAsync();
 
-            var service = new DiarioEntradaService(context);
+            var service = _fixture.CreateServices(context).DiarioEntradas;
             var dto = new CreateDiarioEntradaDto
             {
                 PetId = pet.Id,
@@ -80,7 +81,7 @@ namespace ChallengerPetCenter.UnitTests.Services
         {
             // Arrange
             await using var context = _fixture.CreateContext();
-            var service = new DiarioEntradaService(context);
+            var service = _fixture.CreateServices(context).DiarioEntradas;
             var dto = new CreateDiarioEntradaDto
             {
                 PetId = 999,
@@ -107,7 +108,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             context.DiarioEntradas.AddRange(entrada1, entrada2);
             await context.SaveChangesAsync();
 
-            var service = new DiarioEntradaService(context);
+            var service = _fixture.CreateServices(context).DiarioEntradas;
             var dto = new UpdateDiarioEntradaDto
             {
                 Id = entrada2.Id,
@@ -136,7 +137,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             );
             await context.SaveChangesAsync();
 
-            var service = new DiarioEntradaService(context);
+            var service = _fixture.CreateServices(context).DiarioEntradas;
 
             // Act
             var result = (await service.GetByPetAsync(pet.Id)).ToList();
@@ -148,7 +149,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             Assert.Equal(new DateTime(2026, 9, 1), result[2].Data.Date);
         }
 
-        private static async Task<Pet> SeedPetAsync(Data.AppDbContext context)
+        private static async Task<Pet> SeedPetAsync(AppDbContext context)
         {
             var user = new User
             {

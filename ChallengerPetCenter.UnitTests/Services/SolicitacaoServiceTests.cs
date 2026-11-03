@@ -1,5 +1,6 @@
 using ChallengerPetCenter.DTOs.Solicitacoes;
 using ChallengerPetCenter.Models;
+using ChallengerPetCenter.Data;
 using ChallengerPetCenter.Services;
 using ChallengerPetCenter.UnitTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             // Arrange
             await using var context = _fixture.CreateContext();
             var (pet, tutor, veterinario) = await SeedAsync(context);
-            var service = new SolicitacaoService(context);
+            var service = _fixture.CreateServices(context).Solicitacoes;
             var dto = new CreateSolicitacaoDto
             {
                 PetId = pet.Id,
@@ -58,7 +59,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             context.Users.Add(outroTutor);
             await context.SaveChangesAsync();
 
-            var service = new SolicitacaoService(context);
+            var service = _fixture.CreateServices(context).Solicitacoes;
             var dto = new CreateSolicitacaoDto
             {
                 PetId = pet.Id,
@@ -80,7 +81,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             // Arrange
             await using var context = _fixture.CreateContext();
             var (_, tutor, veterinario) = await SeedAsync(context);
-            var service = new SolicitacaoService(context);
+            var service = _fixture.CreateServices(context).Solicitacoes;
             var dto = new CreateSolicitacaoDto
             {
                 PetId = 999,
@@ -114,7 +115,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             context.Solicitacoes.Add(solicitacao);
             await context.SaveChangesAsync();
 
-            var service = new SolicitacaoService(context);
+            var service = _fixture.CreateServices(context).Solicitacoes;
             var dto = new UpdateSolicitacaoDto
             {
                 Id = solicitacao.Id,
@@ -158,7 +159,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             );
             await context.SaveChangesAsync();
 
-            var service = new SolicitacaoService(context);
+            var service = _fixture.CreateServices(context).Solicitacoes;
 
             // Act
             var result = (await service.GetByStatusAsync("pendente")).ToList();
@@ -169,7 +170,7 @@ namespace ChallengerPetCenter.UnitTests.Services
         }
 
         private static async Task<(Pet Pet, User Tutor, Veterinario Veterinario)> SeedAsync(
-            Data.AppDbContext context)
+            AppDbContext context)
         {
             var tutor = new User
             {

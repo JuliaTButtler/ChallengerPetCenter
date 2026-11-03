@@ -1,10 +1,9 @@
-using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChallengerPetCenter.Data
 {
-    public class AppDbContext : DbContext, IAppDbContext
+    public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)

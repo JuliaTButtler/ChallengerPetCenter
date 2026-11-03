@@ -1,11 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Configuration;
-using ChallengerPetCenter.Abstractions;
 using ChallengerPetCenter.DTOs.Auth;
-using Microsoft.EntityFrameworkCore;
+using ChallengerPetCenter.Repositories;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -13,19 +13,23 @@ namespace ChallengerPetCenter.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IAppDbContext _context;
+        private readonly IUserRepository _users;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly JwtSettings _jwt;
 
-        public AuthService(IAppDbContext context, IOptions<JwtSettings> jwtOptions)
+        public AuthService(
+            IUserRepository users,
+            IUnitOfWork unitOfWork,
+            IOptions<JwtSettings> jwtOptions)
         {
-            _context = context;
+            _users = users;
+            _unitOfWork = unitOfWork;
             _jwt = jwtOptions.Value;
         }
 
         public async Task<ServiceResult<LoginResponseDto>> LoginAsync(LoginRequestDto dto)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == dto.Email);
+            var user = await _users.GetByEmailAsync(dto.Email);
 
             if (user == null || user.Senha != dto.Senha)
                 return ServiceResult<LoginResponseDto>.Failure("Email ou senha inválidos.");
@@ -37,7 +41,7 @@ namespace ChallengerPetCenter.Services
             var token = GenerateToken(user.Id, user.Email, user.TipoUsuario, expiresAt);
 
             user.UltimoLogin = DateTime.Now;
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult<LoginResponseDto>.Success(new LoginResponseDto
             {

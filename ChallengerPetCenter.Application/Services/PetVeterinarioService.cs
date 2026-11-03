@@ -1,29 +1,39 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Abstractions;
+using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.PetVeterinarios;
 using ChallengerPetCenter.Models;
-using Microsoft.EntityFrameworkCore;
+using ChallengerPetCenter.Repositories;
 
 namespace ChallengerPetCenter.Services
 {
     public class PetVeterinarioService : IPetVeterinarioService
     {
-        private readonly IAppDbContext _context;
+        private readonly IPetVeterinarioRepository _petVeterinarios;
+        private readonly IPetRepository _pets;
+        private readonly IVeterinarioRepository _veterinarios;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PetVeterinarioService(IAppDbContext context)
+        public PetVeterinarioService(
+            IPetVeterinarioRepository petVeterinarios,
+            IPetRepository pets,
+            IVeterinarioRepository veterinarios,
+            IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _petVeterinarios = petVeterinarios;
+            _pets = pets;
+            _veterinarios = veterinarios;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<PetVeterinarioResponseDto>> GetAllAsync()
         {
-            var items = await _context.PetVeterinarios.ToListAsync();
+            var items = await _petVeterinarios.GetAllAsync();
             return items.Select(MapToDto);
         }
 
         public async Task<ServiceResult<PetVeterinarioResponseDto>> GetByIdAsync(int id)
         {
-            var item = await _context.PetVeterinarios.FindAsync(id);
+            var item = await _petVeterinarios.GetByIdAsync(id);
             if (item == null)
                 return ServiceResult<PetVeterinarioResponseDto>.AsNotFound("Vínculo não encontrado.");
 
@@ -32,50 +42,31 @@ namespace ChallengerPetCenter.Services
 
         public async Task<IEnumerable<PetVeterinarioResponseDto>> GetByPetAsync(int petId)
         {
-            var items = await _context.PetVeterinarios
-                .Where(pv => pv.PetId == petId)
-                .ToListAsync();
-
+            var items = await _petVeterinarios.GetByPetAsync(petId);
             return items.Select(MapToDto);
         }
 
         public async Task<IEnumerable<PetVeterinarioResponseDto>> GetByVeterinarioAsync(int veterinarioId)
         {
-            var items = await _context.PetVeterinarios
-                .Where(pv => pv.VeterinarioId == veterinarioId)
-                .ToListAsync();
-
+            var items = await _petVeterinarios.GetByVeterinarioAsync(veterinarioId);
             return items.Select(MapToDto);
         }
 
         public async Task<IEnumerable<PetVeterinarioResponseDto>> GetAtivosAsync()
         {
-            var items = await _context.PetVeterinarios
-                .Where(pv => pv.Ativo == 1)
-                .ToListAsync();
-
+            var items = await _petVeterinarios.GetAtivosAsync();
             return items.Select(MapToDto);
         }
 
         public async Task<ServiceResult<PetVeterinarioResponseDto>> CreateAsync(CreatePetVeterinarioDto dto)
         {
-            var petExiste = await _context.Pets.CountAsync(p => p.Id == dto.PetId) > 0;
-            if (!petExiste)
+            if (!await _pets.ExistsAsync(dto.PetId))
                 return ServiceResult<PetVeterinarioResponseDto>.Failure("Pet não encontrado.");
 
-            var veterinarioExiste = await _context.Veterinarios
-                .CountAsync(v => v.Id == dto.VeterinarioId) > 0;
-
-            if (!veterinarioExiste)
+            if (!await _veterinarios.ExistsAsync(dto.VeterinarioId))
                 return ServiceResult<PetVeterinarioResponseDto>.Failure("Veterinário não encontrado.");
 
-            var vinculoAtivoExiste = await _context.PetVeterinarios
-                .CountAsync(pv =>
-                    pv.PetId == dto.PetId &&
-                    pv.VeterinarioId == dto.VeterinarioId &&
-                    pv.Ativo == 1) > 0;
-
-            if (vinculoAtivoExiste)
+            if (await _petVeterinarios.ExistsActiveVinculoAsync(dto.PetId, dto.VeterinarioId))
                 return ServiceResult<PetVeterinarioResponseDto>.Failure(
                     "Já existe um vínculo ativo entre este pet e veterinário.");
 
@@ -88,8 +79,8 @@ namespace ChallengerPetCenter.Services
                 Observacoes = dto.Observacoes
             };
 
-            _context.PetVeterinarios.Add(petVeterinario);
-            await _context.SaveChangesAsync();
+            await _petVeterinarios.AddAsync(petVeterinario);
+            await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult<PetVeterinarioResponseDto>.Success(MapToDto(petVeterinario));
         }
@@ -99,40 +90,35 @@ namespace ChallengerPetCenter.Services
             if (id != dto.Id)
                 return ServiceResult.Failure("ID da rota diferente do ID enviado.");
 
-            var existing = await _context.PetVeterinarios.FindAsync(id);
+            var existing = await _petVeterinarios.GetByIdAsync(id);
             if (existing == null)
                 return ServiceResult.AsNotFound("Vínculo não encontrado.");
 
-            // Ao reativar, garantir que não haja outro vínculo ativo do mesmo par
             if (dto.Ativo == 1 && existing.Ativo != 1)
             {
-                var outroAtivo = await _context.PetVeterinarios
-                    .CountAsync(pv =>
-                        pv.Id != id &&
-                        pv.PetId == existing.PetId &&
-                        pv.VeterinarioId == existing.VeterinarioId &&
-                        pv.Ativo == 1) > 0;
-
-                if (outroAtivo)
+                if (await _petVeterinarios.ExistsActiveVinculoAsync(
+                        existing.PetId, existing.VeterinarioId, excludeId: id))
+                {
                     return ServiceResult.Failure(
                         "Já existe um vínculo ativo entre este pet e veterinário.");
+                }
             }
 
             existing.Ativo = dto.Ativo;
             existing.Observacoes = dto.Observacoes;
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 
         public async Task<ServiceResult> DeleteAsync(int id)
         {
-            var item = await _context.PetVeterinarios.FindAsync(id);
+            var item = await _petVeterinarios.GetByIdAsync(id);
             if (item == null)
                 return ServiceResult.AsNotFound("Vínculo não encontrado.");
 
-            _context.PetVeterinarios.Remove(item);
-            await _context.SaveChangesAsync();
+            _petVeterinarios.Remove(item);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 

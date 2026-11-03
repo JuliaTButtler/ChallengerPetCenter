@@ -1,29 +1,31 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Abstractions;
+using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Users;
 using ChallengerPetCenter.Models;
-using Microsoft.EntityFrameworkCore;
+using ChallengerPetCenter.Repositories;
 
 namespace ChallengerPetCenter.Services
 {
     public class UserService : IUserService
     {
-        private readonly IAppDbContext _context;
+        private readonly IUserRepository _users;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UserService(IAppDbContext context)
+        public UserService(IUserRepository users, IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _users = users;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<UserResponseDto>> GetAllAsync()
         {
-            var users = await _context.Users.ToListAsync();
+            var users = await _users.GetAllAsync();
             return users.Select(MapToDto);
         }
 
         public async Task<ServiceResult<UserResponseDto>> GetByIdAsync(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _users.GetByIdAsync(id);
             if (user == null)
                 return ServiceResult<UserResponseDto>.AsNotFound("Usuário não encontrado.");
 
@@ -32,9 +34,7 @@ namespace ChallengerPetCenter.Services
 
         public async Task<ServiceResult<UserResponseDto>> GetByEmailAsync(string email)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == email);
-
+            var user = await _users.GetByEmailAsync(email);
             if (user == null)
                 return ServiceResult<UserResponseDto>.AsNotFound("Usuário não encontrado.");
 
@@ -43,21 +43,13 @@ namespace ChallengerPetCenter.Services
 
         public async Task<IEnumerable<UserResponseDto>> GetByTipoAsync(string tipo)
         {
-            tipo = tipo.ToUpper();
-
-            var users = await _context.Users
-                .Where(u => u.TipoUsuario.ToUpper() == tipo)
-                .ToListAsync();
-
+            var users = await _users.GetByTipoAsync(tipo);
             return users.Select(MapToDto);
         }
 
         public async Task<ServiceResult<UserResponseDto>> CreateAsync(CreateUserDto dto)
         {
-            var emailExiste = await _context.Users
-                .CountAsync(u => u.Email == dto.Email) > 0;
-
-            if (emailExiste)
+            if (await _users.ExistsByEmailAsync(dto.Email))
                 return ServiceResult<UserResponseDto>.Failure("Email já cadastrado.");
 
             var user = new User
@@ -71,8 +63,8 @@ namespace ChallengerPetCenter.Services
                 DataCriacao = DateTime.Now
             };
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _users.AddAsync(user);
+            await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult<UserResponseDto>.Success(MapToDto(user));
         }
@@ -82,14 +74,11 @@ namespace ChallengerPetCenter.Services
             if (id != dto.Id)
                 return ServiceResult.Failure("ID da rota diferente do ID enviado.");
 
-            var existingUser = await _context.Users.FindAsync(id);
+            var existingUser = await _users.GetByIdAsync(id);
             if (existingUser == null)
                 return ServiceResult.AsNotFound("Usuário não encontrado.");
 
-            var emailEmUso = await _context.Users
-                .CountAsync(u => u.Email == dto.Email && u.Id != id) > 0;
-
-            if (emailEmUso)
+            if (await _users.ExistsByEmailExcludingIdAsync(dto.Email, id))
                 return ServiceResult.Failure("Email já cadastrado.");
 
             existingUser.Nome = dto.Nome;
@@ -98,18 +87,18 @@ namespace ChallengerPetCenter.Services
             existingUser.TipoUsuario = dto.TipoUsuario;
             existingUser.Ativo = dto.Ativo;
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 
         public async Task<ServiceResult> DeleteAsync(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _users.GetByIdAsync(id);
             if (user == null)
                 return ServiceResult.AsNotFound("Usuário não encontrado.");
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            _users.Remove(user);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 

@@ -1,29 +1,42 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Abstractions;
+using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Solicitacoes;
 using ChallengerPetCenter.Models;
-using Microsoft.EntityFrameworkCore;
+using ChallengerPetCenter.Repositories;
 
 namespace ChallengerPetCenter.Services
 {
     public class SolicitacaoService : ISolicitacaoService
     {
-        private readonly IAppDbContext _context;
+        private readonly ISolicitacaoRepository _solicitacoes;
+        private readonly IPetRepository _pets;
+        private readonly IUserRepository _users;
+        private readonly IVeterinarioRepository _veterinarios;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public SolicitacaoService(IAppDbContext context)
+        public SolicitacaoService(
+            ISolicitacaoRepository solicitacoes,
+            IPetRepository pets,
+            IUserRepository users,
+            IVeterinarioRepository veterinarios,
+            IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _solicitacoes = solicitacoes;
+            _pets = pets;
+            _users = users;
+            _veterinarios = veterinarios;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<SolicitacaoResponseDto>> GetAllAsync()
         {
-            var solicitacoes = await _context.Solicitacoes.ToListAsync();
+            var solicitacoes = await _solicitacoes.GetAllAsync();
             return solicitacoes.Select(MapToDto);
         }
 
         public async Task<ServiceResult<SolicitacaoResponseDto>> GetByIdAsync(int id)
         {
-            var solicitacao = await _context.Solicitacoes.FindAsync(id);
+            var solicitacao = await _solicitacoes.GetByIdAsync(id);
             if (solicitacao == null)
                 return ServiceResult<SolicitacaoResponseDto>.AsNotFound("Solicitação não encontrada.");
 
@@ -32,58 +45,42 @@ namespace ChallengerPetCenter.Services
 
         public async Task<IEnumerable<SolicitacaoResponseDto>> GetByPetAsync(int petId)
         {
-            var solicitacoes = await _context.Solicitacoes
-                .Where(s => s.PetId == petId)
-                .ToListAsync();
-
+            var solicitacoes = await _solicitacoes.GetByPetAsync(petId);
             return solicitacoes.Select(MapToDto);
         }
 
         public async Task<IEnumerable<SolicitacaoResponseDto>> GetByTutorAsync(int tutorId)
         {
-            var solicitacoes = await _context.Solicitacoes
-                .Where(s => s.TutorId == tutorId)
-                .ToListAsync();
-
+            var solicitacoes = await _solicitacoes.GetByTutorAsync(tutorId);
             return solicitacoes.Select(MapToDto);
         }
 
         public async Task<IEnumerable<SolicitacaoResponseDto>> GetByVeterinarioAsync(int veterinarioId)
         {
-            var solicitacoes = await _context.Solicitacoes
-                .Where(s => s.VeterinarioId == veterinarioId)
-                .ToListAsync();
-
+            var solicitacoes = await _solicitacoes.GetByVeterinarioAsync(veterinarioId);
             return solicitacoes.Select(MapToDto);
         }
 
         public async Task<IEnumerable<SolicitacaoResponseDto>> GetByStatusAsync(string status)
         {
-            var solicitacoes = await _context.Solicitacoes
-                .Where(s => s.Status.ToUpper() == status.ToUpper())
-                .ToListAsync();
-
+            var solicitacoes = await _solicitacoes.GetByStatusAsync(status);
             return solicitacoes.Select(MapToDto);
         }
 
         public async Task<ServiceResult<SolicitacaoResponseDto>> CreateAsync(CreateSolicitacaoDto dto)
         {
-            var pet = await _context.Pets.FindAsync(dto.PetId);
+            var pet = await _pets.GetByIdAsync(dto.PetId);
             if (pet == null)
                 return ServiceResult<SolicitacaoResponseDto>.Failure("Pet não encontrado.");
 
-            var tutorExiste = await _context.Users.CountAsync(u => u.Id == dto.TutorId) > 0;
-            if (!tutorExiste)
+            if (!await _users.ExistsAsync(dto.TutorId))
                 return ServiceResult<SolicitacaoResponseDto>.Failure("Tutor não encontrado.");
 
             if (pet.UserId != dto.TutorId)
                 return ServiceResult<SolicitacaoResponseDto>.Failure(
                     "O tutor informado não é o responsável por este pet.");
 
-            var veterinarioExiste = await _context.Veterinarios
-                .CountAsync(v => v.Id == dto.VeterinarioId) > 0;
-
-            if (!veterinarioExiste)
+            if (!await _veterinarios.ExistsAsync(dto.VeterinarioId))
                 return ServiceResult<SolicitacaoResponseDto>.Failure("Veterinário não encontrado.");
 
             var status = string.IsNullOrWhiteSpace(dto.Status)
@@ -100,8 +97,8 @@ namespace ChallengerPetCenter.Services
                 CriadoEm = DateTime.Now
             };
 
-            _context.Solicitacoes.Add(solicitacao);
-            await _context.SaveChangesAsync();
+            await _solicitacoes.AddAsync(solicitacao);
+            await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult<SolicitacaoResponseDto>.Success(MapToDto(solicitacao));
         }
@@ -111,7 +108,7 @@ namespace ChallengerPetCenter.Services
             if (id != dto.Id)
                 return ServiceResult.Failure("ID da rota diferente do ID enviado.");
 
-            var existing = await _context.Solicitacoes.FindAsync(id);
+            var existing = await _solicitacoes.GetByIdAsync(id);
             if (existing == null)
                 return ServiceResult.AsNotFound("Solicitação não encontrada.");
 
@@ -126,23 +123,24 @@ namespace ChallengerPetCenter.Services
                 existing.RespondidoEm = dto.RespondidoEm;
             }
             else if (statusAnterior == "PENDENTE" &&
-                     (novoStatus == "ACEITA" || novoStatus == "RECUSADA" || novoStatus == "ACEITO" || novoStatus == "RECUSADO"))
+                     (novoStatus == "ACEITA" || novoStatus == "RECUSADA" ||
+                      novoStatus == "ACEITO" || novoStatus == "RECUSADO"))
             {
                 existing.RespondidoEm = DateTime.Now;
             }
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 
         public async Task<ServiceResult> DeleteAsync(int id)
         {
-            var solicitacao = await _context.Solicitacoes.FindAsync(id);
+            var solicitacao = await _solicitacoes.GetByIdAsync(id);
             if (solicitacao == null)
                 return ServiceResult.AsNotFound("Solicitação não encontrada.");
 
-            _context.Solicitacoes.Remove(solicitacao);
-            await _context.SaveChangesAsync();
+            _solicitacoes.Remove(solicitacao);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 

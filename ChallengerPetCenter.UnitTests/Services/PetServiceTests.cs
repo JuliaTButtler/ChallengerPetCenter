@@ -1,5 +1,6 @@
 using ChallengerPetCenter.DTOs.Pets;
 using ChallengerPetCenter.Models;
+using ChallengerPetCenter.Data;
 using ChallengerPetCenter.Services;
 using ChallengerPetCenter.UnitTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             context.Users.Add(tutor);
             await context.SaveChangesAsync();
 
-            var service = new PetService(context);
+            var service = _fixture.CreateServices(context).Pets;
             var dto = new CreatePetDto
             {
                 Nome = "Mel",
@@ -53,7 +54,7 @@ namespace ChallengerPetCenter.UnitTests.Services
         {
             // Arrange
             await using var context = _fixture.CreateContext();
-            var service = new PetService(context);
+            var service = _fixture.CreateServices(context).Pets;
             var dto = new CreatePetDto
             {
                 Nome = "Mel",
@@ -91,7 +92,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             );
             await context.SaveChangesAsync();
 
-            var service = new PetService(context);
+            var service = _fixture.CreateServices(context).Pets;
 
             // Act
             var result = (await service.GetByNomeAsync("bob")).ToList();
@@ -106,7 +107,7 @@ namespace ChallengerPetCenter.UnitTests.Services
         {
             // Arrange
             await using var context = _fixture.CreateContext();
-            var service = new PetService(context);
+            var service = _fixture.CreateServices(context).Pets;
 
             // Act
             var result = await service.DeleteAsync(123);

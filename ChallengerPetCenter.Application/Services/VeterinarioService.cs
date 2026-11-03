@@ -1,29 +1,36 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Abstractions;
+using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Veterinarios;
 using ChallengerPetCenter.Models;
-using Microsoft.EntityFrameworkCore;
+using ChallengerPetCenter.Repositories;
 
 namespace ChallengerPetCenter.Services
 {
     public class VeterinarioService : IVeterinarioService
     {
-        private readonly IAppDbContext _context;
+        private readonly IVeterinarioRepository _veterinarios;
+        private readonly IUserRepository _users;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public VeterinarioService(IAppDbContext context)
+        public VeterinarioService(
+            IVeterinarioRepository veterinarios,
+            IUserRepository users,
+            IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _veterinarios = veterinarios;
+            _users = users;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<VeterinarioResponseDto>> GetAllAsync()
         {
-            var veterinarios = await _context.Veterinarios.ToListAsync();
+            var veterinarios = await _veterinarios.GetAllAsync();
             return veterinarios.Select(MapToDto);
         }
 
         public async Task<ServiceResult<VeterinarioResponseDto>> GetByIdAsync(int id)
         {
-            var veterinario = await _context.Veterinarios.FindAsync(id);
+            var veterinario = await _veterinarios.GetByIdAsync(id);
             if (veterinario == null)
                 return ServiceResult<VeterinarioResponseDto>.AsNotFound("Veterinário não encontrado.");
 
@@ -32,9 +39,7 @@ namespace ChallengerPetCenter.Services
 
         public async Task<ServiceResult<VeterinarioResponseDto>> GetByCrmvAsync(string crmv)
         {
-            var veterinario = await _context.Veterinarios
-                .FirstOrDefaultAsync(v => v.Crmv == crmv);
-
+            var veterinario = await _veterinarios.GetByCrmvAsync(crmv);
             if (veterinario == null)
                 return ServiceResult<VeterinarioResponseDto>.AsNotFound("Veterinário não encontrado.");
 
@@ -43,22 +48,13 @@ namespace ChallengerPetCenter.Services
 
         public async Task<IEnumerable<VeterinarioResponseDto>> GetByEspecialidadeAsync(string especialidade)
         {
-            especialidade = especialidade.ToUpper();
-
-            var veterinarios = await _context.Veterinarios
-                .Where(v =>
-                    v.Especialidade != null &&
-                    v.Especialidade.ToUpper() == especialidade)
-                .ToListAsync();
-
+            var veterinarios = await _veterinarios.GetByEspecialidadeAsync(especialidade);
             return veterinarios.Select(MapToDto);
         }
 
         public async Task<ServiceResult<VeterinarioResponseDto>> GetByUserIdAsync(int userId)
         {
-            var veterinario = await _context.Veterinarios
-                .FirstOrDefaultAsync(v => v.UserId == userId);
-
+            var veterinario = await _veterinarios.GetByUserIdAsync(userId);
             if (veterinario == null)
                 return ServiceResult<VeterinarioResponseDto>.AsNotFound("Veterinário não encontrado.");
 
@@ -67,23 +63,15 @@ namespace ChallengerPetCenter.Services
 
         public async Task<ServiceResult<VeterinarioResponseDto>> CreateAsync(CreateVeterinarioDto dto)
         {
-            var crmvExiste = await _context.Veterinarios
-                .CountAsync(v => v.Crmv == dto.Crmv) > 0;
-
-            if (crmvExiste)
+            if (await _veterinarios.ExistsByCrmvAsync(dto.Crmv))
                 return ServiceResult<VeterinarioResponseDto>.Failure("CRMV já cadastrado.");
 
-            var userExiste = await _context.Users
-                .CountAsync(u => u.Id == dto.UserId) > 0;
-
-            if (!userExiste)
+            if (!await _users.ExistsAsync(dto.UserId))
                 return ServiceResult<VeterinarioResponseDto>.Failure("Usuário não encontrado.");
 
-            var userJaVinculado = await _context.Veterinarios
-                .CountAsync(v => v.UserId == dto.UserId) > 0;
-
-            if (userJaVinculado)
-                return ServiceResult<VeterinarioResponseDto>.Failure("Este usuário já está vinculado a um veterinário.");
+            if (await _veterinarios.ExistsByUserIdAsync(dto.UserId))
+                return ServiceResult<VeterinarioResponseDto>.Failure(
+                    "Este usuário já está vinculado a um veterinário.");
 
             var veterinario = new Veterinario
             {
@@ -93,8 +81,8 @@ namespace ChallengerPetCenter.Services
                 UserId = dto.UserId
             };
 
-            _context.Veterinarios.Add(veterinario);
-            await _context.SaveChangesAsync();
+            await _veterinarios.AddAsync(veterinario);
+            await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult<VeterinarioResponseDto>.Success(MapToDto(veterinario));
         }
@@ -104,32 +92,29 @@ namespace ChallengerPetCenter.Services
             if (id != dto.Id)
                 return ServiceResult.Failure("ID da rota diferente do ID enviado.");
 
-            var existing = await _context.Veterinarios.FindAsync(id);
+            var existing = await _veterinarios.GetByIdAsync(id);
             if (existing == null)
                 return ServiceResult.AsNotFound("Veterinário não encontrado.");
 
-            var crmvEmUso = await _context.Veterinarios
-                .CountAsync(v => v.Crmv == dto.Crmv && v.Id != id) > 0;
-
-            if (crmvEmUso)
+            if (await _veterinarios.ExistsByCrmvExcludingIdAsync(dto.Crmv, id))
                 return ServiceResult.Failure("CRMV já cadastrado.");
 
             existing.Crmv = dto.Crmv;
             existing.Especialidade = dto.Especialidade;
             existing.Descricao = dto.Descricao;
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 
         public async Task<ServiceResult> DeleteAsync(int id)
         {
-            var veterinario = await _context.Veterinarios.FindAsync(id);
+            var veterinario = await _veterinarios.GetByIdAsync(id);
             if (veterinario == null)
                 return ServiceResult.AsNotFound("Veterinário não encontrado.");
 
-            _context.Veterinarios.Remove(veterinario);
-            await _context.SaveChangesAsync();
+            _veterinarios.Remove(veterinario);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 

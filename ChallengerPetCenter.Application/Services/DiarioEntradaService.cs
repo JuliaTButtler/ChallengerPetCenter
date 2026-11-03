@@ -1,29 +1,36 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Abstractions;
+using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.DiarioEntradas;
 using ChallengerPetCenter.Models;
-using Microsoft.EntityFrameworkCore;
+using ChallengerPetCenter.Repositories;
 
 namespace ChallengerPetCenter.Services
 {
     public class DiarioEntradaService : IDiarioEntradaService
     {
-        private readonly IAppDbContext _context;
+        private readonly IDiarioEntradaRepository _diarioEntradas;
+        private readonly IPetRepository _pets;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public DiarioEntradaService(IAppDbContext context)
+        public DiarioEntradaService(
+            IDiarioEntradaRepository diarioEntradas,
+            IPetRepository pets,
+            IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _diarioEntradas = diarioEntradas;
+            _pets = pets;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<IEnumerable<DiarioEntradaResponseDto>> GetAllAsync()
         {
-            var entradas = await _context.DiarioEntradas.ToListAsync();
+            var entradas = await _diarioEntradas.GetAllAsync();
             return entradas.Select(MapToDto);
         }
 
         public async Task<ServiceResult<DiarioEntradaResponseDto>> GetByIdAsync(int id)
         {
-            var entrada = await _context.DiarioEntradas.FindAsync(id);
+            var entrada = await _diarioEntradas.GetByIdAsync(id);
             if (entrada == null)
                 return ServiceResult<DiarioEntradaResponseDto>.AsNotFound("Entrada não encontrada.");
 
@@ -32,47 +39,29 @@ namespace ChallengerPetCenter.Services
 
         public async Task<IEnumerable<DiarioEntradaResponseDto>> GetByPetAsync(int petId)
         {
-            var entradas = await _context.DiarioEntradas
-                .Where(d => d.PetId == petId)
-                .OrderByDescending(d => d.Data)
-                .ToListAsync();
-
+            var entradas = await _diarioEntradas.GetByPetAsync(petId);
             return entradas.Select(MapToDto);
         }
 
         public async Task<IEnumerable<DiarioEntradaResponseDto>> GetByStatusAsync(string status)
         {
-            var entradas = await _context.DiarioEntradas
-                .Where(d =>
-                    d.Status != null &&
-                    d.Status.ToUpper() == status.ToUpper())
-                .ToListAsync();
-
+            var entradas = await _diarioEntradas.GetByStatusAsync(status);
             return entradas.Select(MapToDto);
         }
 
         public async Task<IEnumerable<DiarioEntradaResponseDto>> GetByHumorAsync(string humor)
         {
-            var entradas = await _context.DiarioEntradas
-                .Where(d =>
-                    d.HumorGeral != null &&
-                    d.HumorGeral.ToUpper() == humor.ToUpper())
-                .ToListAsync();
-
+            var entradas = await _diarioEntradas.GetByHumorAsync(humor);
             return entradas.Select(MapToDto);
         }
 
         public async Task<ServiceResult<DiarioEntradaResponseDto>> CreateAsync(CreateDiarioEntradaDto dto)
         {
-            var petExiste = await _context.Pets.CountAsync(p => p.Id == dto.PetId) > 0;
-            if (!petExiste)
+            if (!await _pets.ExistsAsync(dto.PetId))
                 return ServiceResult<DiarioEntradaResponseDto>.Failure("Pet não encontrado.");
 
             var data = dto.Data.Date;
-            var entradaExiste = await _context.DiarioEntradas
-                .CountAsync(d => d.PetId == dto.PetId && d.Data.Date == data) > 0;
-
-            if (entradaExiste)
+            if (await _diarioEntradas.ExistsByPetAndDateAsync(dto.PetId, data))
                 return ServiceResult<DiarioEntradaResponseDto>.Failure(
                     "Já existe uma entrada para este pet nesta data.");
 
@@ -86,8 +75,8 @@ namespace ChallengerPetCenter.Services
                 CriadoEm = DateTime.Now
             };
 
-            _context.DiarioEntradas.Add(entrada);
-            await _context.SaveChangesAsync();
+            await _diarioEntradas.AddAsync(entrada);
+            await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult<DiarioEntradaResponseDto>.Success(MapToDto(entrada));
         }
@@ -97,22 +86,16 @@ namespace ChallengerPetCenter.Services
             if (id != dto.Id)
                 return ServiceResult.Failure("ID da rota diferente do ID enviado.");
 
-            var existing = await _context.DiarioEntradas.FindAsync(id);
+            var existing = await _diarioEntradas.GetByIdAsync(id);
             if (existing == null)
                 return ServiceResult.AsNotFound("Entrada não encontrada.");
 
             var novaData = dto.Data.Date;
-            if (existing.Data.Date != novaData)
+            if (existing.Data.Date != novaData &&
+                await _diarioEntradas.ExistsByPetAndDateAsync(existing.PetId, novaData, excludeId: id))
             {
-                var conflito = await _context.DiarioEntradas
-                    .CountAsync(d =>
-                        d.Id != id &&
-                        d.PetId == existing.PetId &&
-                        d.Data.Date == novaData) > 0;
-
-                if (conflito)
-                    return ServiceResult.Failure(
-                        "Já existe uma entrada para este pet nesta data.");
+                return ServiceResult.Failure(
+                    "Já existe uma entrada para este pet nesta data.");
             }
 
             existing.Data = novaData;
@@ -121,18 +104,18 @@ namespace ChallengerPetCenter.Services
             existing.Status = dto.Status;
             existing.AtualizadoEm = DateTime.Now;
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 
         public async Task<ServiceResult> DeleteAsync(int id)
         {
-            var entrada = await _context.DiarioEntradas.FindAsync(id);
+            var entrada = await _diarioEntradas.GetByIdAsync(id);
             if (entrada == null)
                 return ServiceResult.AsNotFound("Entrada não encontrada.");
 
-            _context.DiarioEntradas.Remove(entrada);
-            await _context.SaveChangesAsync();
+            _diarioEntradas.Remove(entrada);
+            await _unitOfWork.SaveChangesAsync();
             return ServiceResult.Success();
         }
 

@@ -1,5 +1,6 @@
 using ChallengerPetCenter.DTOs.Users;
 using ChallengerPetCenter.Models;
+using ChallengerPetCenter.Data;
 using ChallengerPetCenter.Services;
 using ChallengerPetCenter.UnitTests.Fixtures;
 using Microsoft.EntityFrameworkCore;
@@ -21,7 +22,7 @@ namespace ChallengerPetCenter.UnitTests.Services
         {
             // Arrange
             await using var context = _fixture.CreateContext();
-            var service = new UserService(context);
+            var service = _fixture.CreateServices(context).Users;
             var dto = new CreateUserDto
             {
                 Nome = "Ana Tutor",
@@ -55,7 +56,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             });
             await context.SaveChangesAsync();
 
-            var service = new UserService(context);
+            var service = _fixture.CreateServices(context).Users;
             var dto = new CreateUserDto
             {
                 Nome = "Novo",
@@ -78,7 +79,7 @@ namespace ChallengerPetCenter.UnitTests.Services
         {
             // Arrange
             await using var context = _fixture.CreateContext();
-            var service = new UserService(context);
+            var service = _fixture.CreateServices(context).Users;
 
             // Act
             var result = await service.GetByIdAsync(999);
@@ -101,7 +102,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             await context.SaveChangesAsync();
 
             var userB = context.Users.Single(u => u.Email == "b@email.com");
-            var service = new UserService(context);
+            var service = _fixture.CreateServices(context).Users;
             var dto = new UpdateUserDto
             {
                 Id = userB.Id,
@@ -134,7 +135,7 @@ namespace ChallengerPetCenter.UnitTests.Services
             context.Users.Add(user);
             await context.SaveChangesAsync();
 
-            var service = new UserService(context);
+            var service = _fixture.CreateServices(context).Users;
 
             // Act
             var result = await service.DeleteAsync(user.Id);
