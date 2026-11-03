@@ -1,4 +1,3 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Users;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +8,7 @@ namespace ChallengerPetCenter.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    public class UsersController : ControllerBase
+    public class UsersController : ApiControllerBase
     {
         private readonly IUserService _userService;
 
@@ -63,7 +62,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var users = (await _userService.GetByTipoAsync(tipo)).ToList();
             if (!users.Any())
-                return NotFound("Nenhum usuário encontrado.");
+                return ProblemNotFound("Nenhum usuário encontrado.");
 
             return Ok(users);
         }
@@ -78,7 +77,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _userService.CreateAsync(dto);
             if (!result.Succeeded)
-                return BadRequest(result.Error);
+                return ProblemBadRequest(result.Error ?? "Requisição inválida.");
 
             return CreatedAtAction(
                 nameof(GetUserById),
@@ -112,22 +111,6 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _userService.DeleteAsync(id);
             return ToActionResult(result);
-        }
-
-        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return Ok(result.Data);
-        }
-
-        private IActionResult ToActionResult(ServiceResult result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return NoContent();
         }
     }
 }

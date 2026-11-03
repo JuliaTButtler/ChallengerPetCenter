@@ -1,4 +1,3 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Veterinarios;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,7 @@ namespace ChallengerPetCenter.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    public class VeterinariosController : ControllerBase
+    public class VeterinariosController : ApiControllerBase
     {
         private readonly IVeterinarioService _veterinarioService;
 
@@ -62,7 +61,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var veterinarios = (await _veterinarioService.GetByEspecialidadeAsync(especialidade)).ToList();
             if (!veterinarios.Any())
-                return NotFound("Nenhum veterinário encontrado.");
+                return ProblemNotFound("Nenhum veterinário encontrado.");
 
             return Ok(veterinarios);
         }
@@ -89,7 +88,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _veterinarioService.CreateAsync(dto);
             if (!result.Succeeded)
-                return BadRequest(result.Error);
+                return ProblemBadRequest(result.Error ?? "Requisição inválida.");
 
             return CreatedAtAction(
                 nameof(GetVeterinarioById),
@@ -121,22 +120,6 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _veterinarioService.DeleteAsync(id);
             return ToActionResult(result);
-        }
-
-        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return Ok(result.Data);
-        }
-
-        private IActionResult ToActionResult(ServiceResult result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return NoContent();
         }
     }
 }

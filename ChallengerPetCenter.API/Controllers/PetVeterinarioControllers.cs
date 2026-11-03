@@ -1,4 +1,3 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.PetVeterinarios;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,7 @@ namespace ChallengerPetCenter.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    public class PetVeterinariosController : ControllerBase
+    public class PetVeterinariosController : ApiControllerBase
     {
         private readonly IPetVeterinarioService _petVeterinarioService;
 
@@ -50,7 +49,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var items = (await _petVeterinarioService.GetByPetAsync(petId)).ToList();
             if (!items.Any())
-                return NotFound("Nenhum vínculo encontrado.");
+                return ProblemNotFound("Nenhum vínculo encontrado.");
 
             return Ok(items);
         }
@@ -65,7 +64,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var items = (await _petVeterinarioService.GetByVeterinarioAsync(veterinarioId)).ToList();
             if (!items.Any())
-                return NotFound("Nenhum vínculo encontrado.");
+                return ProblemNotFound("Nenhum vínculo encontrado.");
 
             return Ok(items);
         }
@@ -80,7 +79,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var items = (await _petVeterinarioService.GetAtivosAsync()).ToList();
             if (!items.Any())
-                return NotFound("Nenhum vínculo ativo encontrado.");
+                return ProblemNotFound("Nenhum vínculo ativo encontrado.");
 
             return Ok(items);
         }
@@ -95,7 +94,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _petVeterinarioService.CreateAsync(dto);
             if (!result.Succeeded)
-                return BadRequest(result.Error);
+                return ProblemBadRequest(result.Error ?? "Requisição inválida.");
 
             return CreatedAtAction(
                 nameof(GetPetVeterinarioById),
@@ -127,22 +126,6 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _petVeterinarioService.DeleteAsync(id);
             return ToActionResult(result);
-        }
-
-        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return Ok(result.Data);
-        }
-
-        private IActionResult ToActionResult(ServiceResult result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return NoContent();
         }
     }
 }

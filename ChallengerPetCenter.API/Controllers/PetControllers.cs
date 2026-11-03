@@ -1,4 +1,3 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Pets;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,7 @@ namespace ChallengerPetCenter.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    public class PetsController : ControllerBase
+    public class PetsController : ApiControllerBase
     {
         private readonly IPetService _petService;
 
@@ -50,7 +49,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var pets = (await _petService.GetByUserAsync(userId)).ToList();
             if (!pets.Any())
-                return NotFound("Nenhum pet encontrado para este tutor.");
+                return ProblemNotFound("Nenhum pet encontrado para este tutor.");
 
             return Ok(pets);
         }
@@ -65,7 +64,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var pets = (await _petService.GetByEspecieAsync(especie)).ToList();
             if (!pets.Any())
-                return NotFound("Nenhum pet encontrado.");
+                return ProblemNotFound("Nenhum pet encontrado.");
 
             return Ok(pets);
         }
@@ -80,7 +79,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var pets = (await _petService.GetByNomeAsync(nome)).ToList();
             if (!pets.Any())
-                return NotFound("Nenhum pet encontrado.");
+                return ProblemNotFound("Nenhum pet encontrado.");
 
             return Ok(pets);
         }
@@ -95,7 +94,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _petService.CreateAsync(dto);
             if (!result.Succeeded)
-                return BadRequest(result.Error);
+                return ProblemBadRequest(result.Error ?? "Requisição inválida.");
 
             return CreatedAtAction(
                 nameof(GetPetById),
@@ -127,22 +126,6 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _petService.DeleteAsync(id);
             return ToActionResult(result);
-        }
-
-        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return Ok(result.Data);
-        }
-
-        private IActionResult ToActionResult(ServiceResult result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return NoContent();
         }
     }
 }

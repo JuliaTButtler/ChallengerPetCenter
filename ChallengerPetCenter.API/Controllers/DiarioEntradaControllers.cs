@@ -1,4 +1,3 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.DiarioEntradas;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,7 @@ namespace ChallengerPetCenter.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    public class DiarioEntradasController : ControllerBase
+    public class DiarioEntradasController : ApiControllerBase
     {
         private readonly IDiarioEntradaService _diarioEntradaService;
 
@@ -50,7 +49,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var entradas = (await _diarioEntradaService.GetByPetAsync(petId)).ToList();
             if (!entradas.Any())
-                return NotFound("Nenhuma entrada encontrada.");
+                return ProblemNotFound("Nenhuma entrada encontrada.");
 
             return Ok(entradas);
         }
@@ -65,7 +64,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var entradas = (await _diarioEntradaService.GetByStatusAsync(status)).ToList();
             if (!entradas.Any())
-                return NotFound("Nenhuma entrada encontrada.");
+                return ProblemNotFound("Nenhuma entrada encontrada.");
 
             return Ok(entradas);
         }
@@ -80,7 +79,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var entradas = (await _diarioEntradaService.GetByHumorAsync(humor)).ToList();
             if (!entradas.Any())
-                return NotFound("Nenhuma entrada encontrada.");
+                return ProblemNotFound("Nenhuma entrada encontrada.");
 
             return Ok(entradas);
         }
@@ -95,7 +94,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _diarioEntradaService.CreateAsync(dto);
             if (!result.Succeeded)
-                return BadRequest(result.Error);
+                return ProblemBadRequest(result.Error ?? "Requisição inválida.");
 
             return CreatedAtAction(
                 nameof(GetDiarioEntradaById),
@@ -127,22 +126,6 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _diarioEntradaService.DeleteAsync(id);
             return ToActionResult(result);
-        }
-
-        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return Ok(result.Data);
-        }
-
-        private IActionResult ToActionResult(ServiceResult result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return NoContent();
         }
     }
 }

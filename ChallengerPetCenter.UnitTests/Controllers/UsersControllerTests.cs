@@ -2,6 +2,7 @@ using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Controllers;
 using ChallengerPetCenter.DTOs.Users;
 using ChallengerPetCenter.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 
@@ -12,6 +13,16 @@ namespace ChallengerPetCenter.UnitTests.Controllers
     /// </summary>
     public class UsersControllerTests
     {
+        private static UsersController CreateController(IUserService service)
+        {
+            var controller = new UsersController(service);
+            controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext()
+            };
+            return controller;
+        }
+
         [Fact]
         public async Task GetUserById_QuandoUsuarioExiste_RetornaOk()
         {
@@ -30,7 +41,7 @@ namespace ChallengerPetCenter.UnitTests.Controllers
                 .Setup(s => s.GetByIdAsync(1))
                 .ReturnsAsync(ServiceResult<UserResponseDto>.Success(dto));
 
-            var controller = new UsersController(mockService.Object);
+            var controller = CreateController(mockService.Object);
 
             // Act
             var actionResult = await controller.GetUserById(1);
@@ -43,7 +54,7 @@ namespace ChallengerPetCenter.UnitTests.Controllers
         }
 
         [Fact]
-        public async Task GetUserById_QuandoUsuarioNaoExiste_RetornaNotFound()
+        public async Task GetUserById_QuandoUsuarioNaoExiste_RetornaProblemDetailsNotFound()
         {
             // Arrange
             var mockService = new Mock<IUserService>();
@@ -51,18 +62,21 @@ namespace ChallengerPetCenter.UnitTests.Controllers
                 .Setup(s => s.GetByIdAsync(99))
                 .ReturnsAsync(ServiceResult<UserResponseDto>.AsNotFound("Usuário não encontrado."));
 
-            var controller = new UsersController(mockService.Object);
+            var controller = CreateController(mockService.Object);
 
             // Act
             var actionResult = await controller.GetUserById(99);
 
             // Assert
-            var notFound = Assert.IsType<NotFoundObjectResult>(actionResult.Result);
-            Assert.Equal("Usuário não encontrado.", notFound.Value);
+            var objectResult = Assert.IsType<ObjectResult>(actionResult.Result);
+            Assert.Equal(StatusCodes.Status404NotFound, objectResult.StatusCode);
+            var problem = Assert.IsType<ProblemDetails>(objectResult.Value);
+            Assert.Equal("Usuário não encontrado.", problem.Detail);
+            Assert.Equal("Recurso não encontrado", problem.Title);
         }
 
         [Fact]
-        public async Task CreateUser_QuandoEmailDuplicado_RetornaBadRequest()
+        public async Task CreateUser_QuandoEmailDuplicado_RetornaProblemDetailsBadRequest()
         {
             // Arrange
             var mockService = new Mock<IUserService>();
@@ -70,7 +84,7 @@ namespace ChallengerPetCenter.UnitTests.Controllers
                 .Setup(s => s.CreateAsync(It.IsAny<CreateUserDto>()))
                 .ReturnsAsync(ServiceResult<UserResponseDto>.Failure("Email já cadastrado."));
 
-            var controller = new UsersController(mockService.Object);
+            var controller = CreateController(mockService.Object);
             var dto = new CreateUserDto
             {
                 Nome = "Ana",
@@ -83,8 +97,10 @@ namespace ChallengerPetCenter.UnitTests.Controllers
             var actionResult = await controller.CreateUser(dto);
 
             // Assert
-            var badRequest = Assert.IsType<BadRequestObjectResult>(actionResult.Result);
-            Assert.Equal("Email já cadastrado.", badRequest.Value);
+            var objectResult = Assert.IsType<ObjectResult>(actionResult.Result);
+            Assert.Equal(StatusCodes.Status400BadRequest, objectResult.StatusCode);
+            var problem = Assert.IsType<ProblemDetails>(objectResult.Value);
+            Assert.Equal("Email já cadastrado.", problem.Detail);
         }
 
         [Fact]
@@ -105,7 +121,7 @@ namespace ChallengerPetCenter.UnitTests.Controllers
                 .Setup(s => s.CreateAsync(It.IsAny<CreateUserDto>()))
                 .ReturnsAsync(ServiceResult<UserResponseDto>.Success(created));
 
-            var controller = new UsersController(mockService.Object);
+            var controller = CreateController(mockService.Object);
             var dto = new CreateUserDto
             {
                 Nome = "Ana",

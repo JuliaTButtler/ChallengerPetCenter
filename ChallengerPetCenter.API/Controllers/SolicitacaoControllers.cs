@@ -1,4 +1,3 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Solicitacoes;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,7 @@ namespace ChallengerPetCenter.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    public class SolicitacoesController : ControllerBase
+    public class SolicitacoesController : ApiControllerBase
     {
         private readonly ISolicitacaoService _solicitacaoService;
 
@@ -50,7 +49,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var solicitacoes = (await _solicitacaoService.GetByPetAsync(petId)).ToList();
             if (!solicitacoes.Any())
-                return NotFound("Nenhuma solicitação encontrada.");
+                return ProblemNotFound("Nenhuma solicitação encontrada.");
 
             return Ok(solicitacoes);
         }
@@ -65,7 +64,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var solicitacoes = (await _solicitacaoService.GetByTutorAsync(tutorId)).ToList();
             if (!solicitacoes.Any())
-                return NotFound("Nenhuma solicitação encontrada.");
+                return ProblemNotFound("Nenhuma solicitação encontrada.");
 
             return Ok(solicitacoes);
         }
@@ -80,7 +79,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var solicitacoes = (await _solicitacaoService.GetByVeterinarioAsync(veterinarioId)).ToList();
             if (!solicitacoes.Any())
-                return NotFound("Nenhuma solicitação encontrada.");
+                return ProblemNotFound("Nenhuma solicitação encontrada.");
 
             return Ok(solicitacoes);
         }
@@ -95,7 +94,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var solicitacoes = (await _solicitacaoService.GetByStatusAsync(status)).ToList();
             if (!solicitacoes.Any())
-                return NotFound("Nenhuma solicitação encontrada.");
+                return ProblemNotFound("Nenhuma solicitação encontrada.");
 
             return Ok(solicitacoes);
         }
@@ -110,7 +109,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _solicitacaoService.CreateAsync(dto);
             if (!result.Succeeded)
-                return BadRequest(result.Error);
+                return ProblemBadRequest(result.Error ?? "Requisição inválida.");
 
             return CreatedAtAction(
                 nameof(GetSolicitacaoById),
@@ -142,22 +141,6 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _solicitacaoService.DeleteAsync(id);
             return ToActionResult(result);
-        }
-
-        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return Ok(result.Data);
-        }
-
-        private IActionResult ToActionResult(ServiceResult result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return NoContent();
         }
     }
 }

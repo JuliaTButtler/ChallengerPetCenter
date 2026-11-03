@@ -32,13 +32,16 @@ namespace ChallengerPetCenter.IntegrationTests
         }
 
         [Fact]
-        public async Task GetUserById_QuandoNaoExiste_RetornaNotFound()
+        public async Task GetUserById_QuandoNaoExiste_RetornaNotFoundProblemDetails()
         {
             // Arrange / Act
             var response = await _client.GetAsync("/api/users/999999");
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Contains("title", body, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("detail", body, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]

@@ -1,4 +1,3 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Comentarios;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,7 @@ namespace ChallengerPetCenter.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    public class ComentariosController : ControllerBase
+    public class ComentariosController : ApiControllerBase
     {
         private readonly IComentarioService _comentarioService;
 
@@ -50,7 +49,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var comentarios = (await _comentarioService.GetByDiarioAsync(diarioEntradaId)).ToList();
             if (!comentarios.Any())
-                return NotFound("Nenhum comentário encontrado.");
+                return ProblemNotFound("Nenhum comentário encontrado.");
 
             return Ok(comentarios);
         }
@@ -65,7 +64,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var comentarios = (await _comentarioService.GetByUserAsync(userId)).ToList();
             if (!comentarios.Any())
-                return NotFound("Nenhum comentário encontrado.");
+                return ProblemNotFound("Nenhum comentário encontrado.");
 
             return Ok(comentarios);
         }
@@ -80,7 +79,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var comentarios = (await _comentarioService.GetByTextoAsync(texto)).ToList();
             if (!comentarios.Any())
-                return NotFound("Nenhum comentário encontrado.");
+                return ProblemNotFound("Nenhum comentário encontrado.");
 
             return Ok(comentarios);
         }
@@ -95,7 +94,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _comentarioService.CreateAsync(dto);
             if (!result.Succeeded)
-                return BadRequest(result.Error);
+                return ProblemBadRequest(result.Error ?? "Requisição inválida.");
 
             return CreatedAtAction(
                 nameof(GetComentarioById),
@@ -127,22 +126,6 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _comentarioService.DeleteAsync(id);
             return ToActionResult(result);
-        }
-
-        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return Ok(result.Data);
-        }
-
-        private IActionResult ToActionResult(ServiceResult result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return NoContent();
         }
     }
 }

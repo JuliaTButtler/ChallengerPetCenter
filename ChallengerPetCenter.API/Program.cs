@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using ChallengerPetCenter.API.Exceptions;
 using ChallengerPetCenter.Application;
 using ChallengerPetCenter.Configuration;
 using ChallengerPetCenter.Data;
@@ -11,6 +12,7 @@ using ChallengerPetCenter.Middleware;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -76,7 +78,25 @@ try
             }
         });
 
-    builder.Services.AddControllers();
+    builder.Services.AddProblemDetails();
+    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+    builder.Services.AddControllers()
+        .ConfigureApiBehaviorOptions(options =>
+        {
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var problem = new ValidationProblemDetails(context.ModelState)
+                {
+                    Status = StatusCodes.Status400BadRequest,
+                    Title = "Erro de validação",
+                    Detail = "Um ou mais campos são inválidos.",
+                    Instance = context.HttpContext.Request.Path
+                };
+                problem.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+                return new BadRequestObjectResult(problem);
+            };
+        });
 
     builder.Services.Configure<JwtSettings>(
         builder.Configuration.GetSection(JwtSettings.SectionName));
@@ -167,6 +187,7 @@ try
 
     var app = builder.Build();
 
+    app.UseExceptionHandler();
     app.UseMiddleware<CorrelationIdMiddleware>();
 
     app.UseSerilogRequestLogging(options =>

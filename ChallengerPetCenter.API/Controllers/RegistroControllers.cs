@@ -1,4 +1,3 @@
-using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Registros;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +7,7 @@ namespace ChallengerPetCenter.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Produces("application/json")]
-    public class RegistrosController : ControllerBase
+    public class RegistrosController : ApiControllerBase
     {
         private readonly IRegistroService _registroService;
 
@@ -50,7 +49,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var registros = (await _registroService.GetByDiarioAsync(diarioEntradaId)).ToList();
             if (!registros.Any())
-                return NotFound("Nenhum registro encontrado.");
+                return ProblemNotFound("Nenhum registro encontrado.");
 
             return Ok(registros);
         }
@@ -65,7 +64,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var registros = (await _registroService.GetByTipoAsync(tipo)).ToList();
             if (!registros.Any())
-                return NotFound("Nenhum registro encontrado.");
+                return ProblemNotFound("Nenhum registro encontrado.");
 
             return Ok(registros);
         }
@@ -80,7 +79,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var registros = (await _registroService.GetBySubtipoAsync(subtipo)).ToList();
             if (!registros.Any())
-                return NotFound("Nenhum registro encontrado.");
+                return ProblemNotFound("Nenhum registro encontrado.");
 
             return Ok(registros);
         }
@@ -95,7 +94,7 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _registroService.CreateAsync(dto);
             if (!result.Succeeded)
-                return BadRequest(result.Error);
+                return ProblemBadRequest(result.Error ?? "Requisição inválida.");
 
             return CreatedAtAction(
                 nameof(GetRegistroById),
@@ -127,22 +126,6 @@ namespace ChallengerPetCenter.Controllers
         {
             var result = await _registroService.DeleteAsync(id);
             return ToActionResult(result);
-        }
-
-        private ActionResult<T> ToActionResult<T>(ServiceResult<T> result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return Ok(result.Data);
-        }
-
-        private IActionResult ToActionResult(ServiceResult result)
-        {
-            if (!result.Succeeded)
-                return result.NotFound ? NotFound(result.Error) : BadRequest(result.Error);
-
-            return NoContent();
         }
     }
 }
