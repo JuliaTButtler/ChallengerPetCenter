@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ChallengerPetCenter.API\ChallengerPetCenter.API.csproj" />
+    <ProjectReference Include="..\ChallengerPetCenter.Domain\ChallengerPetCenter.Domain.csproj" />
     <ProjectReference Include="..\ChallengerPetCenter.Application\ChallengerPetCenter.Application.csproj" />
     <ProjectReference Include="..\ChallengerPetCenter.Infrastructure\ChallengerPetCenter.Infrastructure.csproj" />
   </ItemGroup>

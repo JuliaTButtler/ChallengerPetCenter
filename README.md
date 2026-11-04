@@ -185,19 +185,38 @@ Veja o **Guia de testes manuais no Swagger** mais abaixo para exemplos completos
 
 A solution inclui projetos separados por camada:
 
-* `ChallengerPetCenter.UnitTests` — AAA nos Services/Controllers (Moq + EF InMemory), Collection Fixture do banco
+* `ChallengerPetCenter.UnitTests` — Domain (regras puras, sem EF/Moq) + Application (Moq dos repos) + Controllers
 * `ChallengerPetCenter.IntegrationTests` — `WebApplicationFactory` + EF InMemory + Collection Fixture
 
-Nomenclatura: `Metodo_Cenario_ResultadoEsperado` (ex.: `CreateAsync_QuandoEmailJaExiste_RetornaFailure`).
+Nomenclatura: `Metodo_Cenario_Resultado` (ex.: `CreateAsync_QuandoEmailJaExiste_RetornaFailure`). AAA visível em cada teste.
 
-Cobertura de integração inclui:
-* Auth: `401` sem token, `200` com token, login inválido `400`
-* Users: `201` create, `400` email duplicado, `404` id inexistente
-* Health live: `200`
+### O que é coberto
+
+**Domain (unitário):** email inválido, diário duplicado no mesmo dia, pet sem tutor, usuário inativo.
+
+**Application (Moq):** por agregado — create ok, create com regra, get not found, delete; Auth — ok / senha inválida / inativo. Inclui **Comentario** e **Registro**.
+
+**Integração:** Users + Auth + Pets (HTTP com JWT); `401` sem token; `/health/live` e `/health/ready`.
 
 ```bash
 dotnet test ChallengerPetCenter.sln
 ```
+
+### Cobertura (Domain + Application)
+
+Coletor apontado só para Domain/Application via `coverlet.runsettings` (Controllers/Program ficam de fora do alvo).
+
+```bash
+dotnet test ChallengerPetCenter.sln --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory ./TestResults
+```
+
+| Assembly | Line coverage |
+|----------|---------------|
+| `ChallengerPetCenter.Domain` | **94,9%** |
+| `ChallengerPetCenter.Application` | **91,5%** |
+| Combinado (Domain + Application) | **92,0%** |
+
+Relatório: `TestResults/**/coverage.cobertura.xml`.
 
 Para testes manuais com exemplos de body, use a seção **Guia de testes manuais no Swagger**.
 

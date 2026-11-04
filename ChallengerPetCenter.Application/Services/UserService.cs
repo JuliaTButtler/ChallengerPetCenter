@@ -3,6 +3,7 @@ using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Users;
 using ChallengerPetCenter.Models;
 using ChallengerPetCenter.Repositories;
+using ChallengerPetCenter.Rules;
 
 namespace ChallengerPetCenter.Services
 {
@@ -54,6 +55,9 @@ namespace ChallengerPetCenter.Services
 
         public async Task<ServiceResult<UserResponseDto>> CreateAsync(CreateUserDto dto)
         {
+            if (!EmailRules.IsValid(dto.Email))
+                return ServiceResult<UserResponseDto>.Failure(EmailRules.InvalidMessage);
+
             if (await _users.ExistsByEmailAsync(dto.Email))
                 return ServiceResult<UserResponseDto>.Failure("Email já cadastrado.");
 
@@ -88,6 +92,9 @@ namespace ChallengerPetCenter.Services
             var existingUser = await _users.GetByIdAsync(id);
             if (existingUser == null)
                 return ServiceResult.AsNotFound("Usuário não encontrado.");
+
+            if (!EmailRules.IsValid(dto.Email))
+                return ServiceResult.Failure(EmailRules.InvalidMessage);
 
             if (await _users.ExistsByEmailExcludingIdAsync(dto.Email, id))
                 return ServiceResult.Failure("Email já cadastrado.");

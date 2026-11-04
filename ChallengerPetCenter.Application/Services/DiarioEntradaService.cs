@@ -3,6 +3,7 @@ using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.DiarioEntradas;
 using ChallengerPetCenter.Models;
 using ChallengerPetCenter.Repositories;
+using ChallengerPetCenter.Rules;
 
 namespace ChallengerPetCenter.Services
 {
@@ -66,7 +67,7 @@ namespace ChallengerPetCenter.Services
             var data = dto.Data.Date;
             if (await _diarioEntradas.ExistsByPetAndDateAsync(dto.PetId, data))
                 return ServiceResult<DiarioEntradaResponseDto>.Failure(
-                    "Já existe uma entrada para este pet nesta data.");
+                    DiarioEntradaRules.DuplicateSameDayMessage);
 
             var entrada = new DiarioEntrada
             {
@@ -103,8 +104,7 @@ namespace ChallengerPetCenter.Services
             if (existing.Data.Date != novaData &&
                 await _diarioEntradas.ExistsByPetAndDateAsync(existing.PetId, novaData, excludeId: id))
             {
-                return ServiceResult.Failure(
-                    "Já existe uma entrada para este pet nesta data.");
+                return ServiceResult.Failure(DiarioEntradaRules.DuplicateSameDayMessage);
             }
 
             existing.Data = novaData;

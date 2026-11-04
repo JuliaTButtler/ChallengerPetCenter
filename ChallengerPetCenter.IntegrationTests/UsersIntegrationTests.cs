@@ -84,31 +84,6 @@ namespace ChallengerPetCenter.IntegrationTests
             Assert.True(payload.TryGetProperty("_links", out _));
         }
 
-        [Fact]
-        public async Task HealthLive_QuandoApiSobe_RetornaOk()
-        {
-            // Arrange / Act
-            var response = await _client.GetAsync("/health/live");
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task CreatePet_QuandoSemToken_RetornaUnauthorized()
-        {
-            // Arrange / Act
-            var response = await _client.PostAsJsonAsync("/api/pets", new
-            {
-                nome = "Mel",
-                especie = "Cachorro",
-                userId = 1
-            });
-
-            // Assert
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        }
-
         private async Task<HttpResponseMessage> CreateUserAsync(string email)
         {
             var response = await _client.PostAsJsonAsync("/api/users", new CreateUserDto

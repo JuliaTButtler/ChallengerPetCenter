@@ -3,6 +3,7 @@ using ChallengerPetCenter.Common;
 using ChallengerPetCenter.DTOs.Pets;
 using ChallengerPetCenter.Models;
 using ChallengerPetCenter.Repositories;
+using ChallengerPetCenter.Rules;
 
 namespace ChallengerPetCenter.Services
 {
@@ -60,6 +61,9 @@ namespace ChallengerPetCenter.Services
 
         public async Task<ServiceResult<PetResponseDto>> CreateAsync(CreatePetDto dto)
         {
+            if (!PetRules.HasTutor(dto.UserId))
+                return ServiceResult<PetResponseDto>.Failure(PetRules.MissingTutorMessage);
+
             if (!await _users.ExistsAsync(dto.UserId))
                 return ServiceResult<PetResponseDto>.Failure("Tutor não encontrado.");
 

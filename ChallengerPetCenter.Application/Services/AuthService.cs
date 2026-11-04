@@ -6,6 +6,7 @@ using ChallengerPetCenter.Common;
 using ChallengerPetCenter.Configuration;
 using ChallengerPetCenter.DTOs.Auth;
 using ChallengerPetCenter.Repositories;
+using ChallengerPetCenter.Rules;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -34,8 +35,8 @@ namespace ChallengerPetCenter.Services
             if (user == null || user.Senha != dto.Senha)
                 return ServiceResult<LoginResponseDto>.Failure("Email ou senha inválidos.");
 
-            if (user.Ativo != 1)
-                return ServiceResult<LoginResponseDto>.Failure("Usuário inativo.");
+            if (!UserRules.IsActive(user.Ativo))
+                return ServiceResult<LoginResponseDto>.Failure(UserRules.InactiveMessage);
 
             var expiresAt = DateTime.UtcNow.AddMinutes(_jwt.ExpirationMinutes);
             var token = GenerateToken(user.Id, user.Email, user.TipoUsuario, expiresAt);
