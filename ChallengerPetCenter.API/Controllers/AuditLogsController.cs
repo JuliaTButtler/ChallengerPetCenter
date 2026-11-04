@@ -1,4 +1,5 @@
 using ChallengerPetCenter.DTOs.AuditLogs;
+using ChallengerPetCenter.Hateoas;
 using ChallengerPetCenter.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +10,7 @@ namespace ChallengerPetCenter.Controllers
     [Produces("application/json")]
     public class AuditLogsController : ApiControllerBase
     {
+        private const string BasePath = "/api/audit-logs";
         private readonly IAuditLogService _auditLogService;
 
         public AuditLogsController(IAuditLogService auditLogService)
@@ -17,7 +19,7 @@ namespace ChallengerPetCenter.Controllers
         }
 
         /// <summary>
-        /// Consulta a trilha de auditoria persistida no MongoDB.
+        /// Consulta a trilha de auditoria persistida no MongoDB (paginação + HATEOAS).
         /// </summary>
         /// <param name="entity">Filtro por entidade (ex.: User, Pet, DiarioEntrada).</param>
         /// <param name="entityId">Filtro por ID da entidade.</param>
@@ -42,6 +44,20 @@ namespace ChallengerPetCenter.Controllers
                 page,
                 pageSize,
                 cancellationToken);
+
+            var extra = new Dictionary<string, string?>
+            {
+                ["entity"] = entity,
+                ["entityId"] = entityId,
+                ["action"] = action
+            };
+
+            result.Links = HateoasLinkBuilder.ForPagedCollection(
+                BasePath,
+                result.Page,
+                result.PageSize,
+                result.Total,
+                extra);
 
             return Ok(result);
         }
