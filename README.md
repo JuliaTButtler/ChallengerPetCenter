@@ -1,110 +1,161 @@
-# README — Challenger Pet Center API
-API de C# do projeto PetCenter para o Challenger2
+# Challenger Pet Center API
 
-Integrantes: 
+API RESTful em ASP.NET Core (.NET 8) para acompanhamento contínuo da saúde animal — diário do pet, vínculo tutor–veterinário e histórico clínico organizado.
 
-   Arthur dos Santos Cabral, 566515, 2TDSA
-
-   Bruno Martins Bettio, 564939, 2TDSA
-
-   José Diogo da Silva Neves, 562341, 2TDSA 
-
-   Júlia Tiziotto Buttler, 564975, 2TDSA 
-
-   Mariana Xavier Quispe, 566357, 2TDSA 
-
-# LINK DO REPOSITÓRIO: https://github.com/JuliaTButtler/ChallengerPetCenter.git
-
-## Descrição do Projeto
-
-O projeto consiste no desenvolvimento de uma API RESTful para uma plataforma de acompanhamento contínuo da saúde animal, com foco em transformar o cuidado com pets em um processo preventivo, organizado e integrado ao acompanhamento veterinário.
-
-A proposta surgiu a partir da identificação de um problema recorrente: muitos tutores não possuem um histórico estruturado sobre a saúde do animal e frequentemente recorrem ao veterinário apenas em situações emergenciais. Isso dificulta a identificação de padrões comportamentais, reduz a precisão das análises clínicas e torna o cuidado animal majoritariamente reativo.
-
-Como solução, a plataforma propõe a criação de um “diário inteligente do pet”, onde tutores podem registrar informações diárias sobre seus animais, permitindo um acompanhamento contínuo da rotina e da saúde do pet.
-
-O sistema permite:
-
-* Cadastro e gerenciamento de usuários (tutores e veterinários)
-* Autenticação JWT (`/api/auth/login`, `/api/auth/me`, mutations protegidas)
-* Cadastro de pets e vínculo pet–veterinário
-* Diário do pet com registros diários (alimentação, sintomas, comportamento)
-* Comentários e solicitações de acompanhamento
-* Persistência **Oracle** (EF Core) + **MongoDB** (auditoria / NoSQL)
-* Paginação, ordenação, filtros e **HATEOAS** nos endpoints de consulta
-* Health Checks, logging estruturado (Serilog) e tracing/métricas (OpenTelemetry)
-* Testes automatizados (unitários e de integração) com cobertura Domain + Application
-
-O conceito principal da plataforma é transformar registros cotidianos em informações organizadas e úteis para acompanhamento clínico, criando um histórico contínuo da vida do animal.
-
-Entrega consolidada (Sprints 1–4): Clean Architecture, API RESTful completa, Oracle + MongoDB, observabilidade e testes com cobertura das camadas de Domínio e Aplicação.
+**Repositório:** https://github.com/JuliaTButtler/ChallengerPetCenter.git
 
 ---
 
-## Tecnologias Utilizadas
+## Integrantes
 
-* ASP.NET Core Web API (.NET 8)
+| Nome | RM | Turma |
+|------|-----|-------|
+| Arthur dos Santos Cabral | 566515 | 2TDSA |
+| Bruno Martins Bettio | 564939 | 2TDSA |
+| José Diogo da Silva Neves | 562341 | 2TDSA |
+| Júlia Tiziotto Buttler | 564975 | 2TDSA |
+| Mariana Xavier Quispe | 566357 | 2TDSA |
+
+---
+
+## Sumário
+
+1. [Visão geral](#1-visão-geral)
+2. [Arquitetura](#2-arquitetura)
+3. [Instalação e execução](#3-instalação-e-execução)
+4. [MongoDB (auditoria NoSQL)](#4-mongodb-auditoria-nosql)
+5. [Autenticação JWT](#5-autenticação-jwt)
+6. [Paginação, filtros e HATEOAS](#6-paginação-filtros-e-hateoas)
+7. [Documentação dos endpoints](#7-documentação-dos-endpoints)
+8. [Guia de testes no Swagger](#8-guia-de-testes-no-swagger)
+9. [Testes automatizados e cobertura](#9-testes-automatizados-e-cobertura)
+10. [Observabilidade](#10-observabilidade)
+
+---
+
+## 1. Visão geral
+
+### Contexto e problema
+
+O Challenger Pet Center nasceu da observação de um problema recorrente no cuidado animal: muitos tutores **não mantêm um histórico estruturado** da saúde e da rotina do pet. Informações sobre alimentação, sintomas, humor e comportamento ficam espalhadas em anotações improvisadas ou simplesmente se perdem. Na prática, o veterinário só é acionado em situações emergenciais, o que reduz a qualidade das análises clínicas e torna o cuidado majoritariamente **reativo**, em vez de preventivo.
+
+Sem um registro contínuo, fica difícil identificar padrões (queda de apetite, mudanças de humor, recorrência de sintomas) e construir um acompanhamento compartilhado entre tutor e profissional.
+
+### Solução proposta
+
+A solução é uma **API RESTful** que implementa o conceito de **diário inteligente do pet**: uma plataforma de acompanhamento contínuo em que tutores registram informações diárias e veterinários acompanham o histórico de forma organizada.
+
+A API concentra o domínio de negócio (usuários, pets, diário, registros, comentários, solicitações e vínculos pet–veterinário), expõe contratos HTTP documentados via Swagger/OpenAPI e persiste:
+
+* dados transacionais no **Oracle** (Entity Framework Core + migrations);
+* trilha de auditoria no **MongoDB** (collection `audit_logs`), como uso de persistência NoSQL.
+
+O objetivo é transformar registros cotidianos em informação útil para acompanhamento clínico, criando um histórico contínuo da vida do animal e facilitando a comunicação tutor ↔ veterinário.
+
+### O que a plataforma permite
+
+* Cadastro e gerenciamento de **usuários** (tutores e veterinários) com autenticação **JWT**
+* Cadastro de **pets** vinculados a tutores
+* Perfil de **veterinário** (CRMV, especialidade) associado a um usuário
+* **Vínculo pet–veterinário** com histórico de acompanhamento
+* **Diário do pet** (uma entrada por pet por dia), com humor e status
+* **Registros** do dia (alimentação, sintomas, comportamento, etc.)
+* **Comentários** em entradas do diário
+* **Solicitações** de acompanhamento entre tutor e veterinário
+* Consultas com **paginação, ordenação, filtros e HATEOAS**
+* **Auditoria NoSQL** das operações de negócio no MongoDB
+* **Health Checks**, logging estruturado (Serilog) e tracing/métricas (OpenTelemetry)
+* **Testes** unitários e de integração com cobertura das camadas Domain e Application
+
+### Evolução por sprints
+
+| Sprint | Foco |
+|--------|------|
+| **1-2** | API REST inicial, Oracle + EF Core, Swagger, CRUDs das entidades principais |
+| **3** | Camadas/serviços/DTOs, JWT, Health Checks, Serilog, OpenTelemetry, testes |
+| **4** | Consolidação: Clean Architecture, HATEOAS + paginação/filtros em todas as consultas, MongoDB (auditoria), cobertura de testes Domain/Application, README final |
+
+Esta entrega (Sprint 4) consolida o projeto **completo e funcional**, com os tópicos das sprints anteriores integrados e documentados.
+
+### Escopo técnico da entrega
+
+| Área | O que foi entregue |
+|------|--------------------|
+| Arquitetura | Clean Architecture (Domain / Application / Infrastructure / API), SOLID, DI, exception handler global |
+| API REST | CRUD completo, Swagger/OpenAPI, paginação, ordenação, filtros, HATEOAS |
+| Auth | JWT Bearer (login, `/me`, mutations protegidas) — opção “JWT ou Identity” da rubrica |
+| Persistência | EF Core + migrations Oracle; MongoDB para `audit_logs`; padrão Repository + Unit of Work |
+| Observabilidade | Health Checks (self, Oracle, Mongo, serviço externo), Serilog, OpenTelemetry |
+| Testes | xUnit (unitários + integração), padrão AAA, Coverlet Domain + Application (~92%) |
+| Documentação | README (visão geral, arquitetura, endpoints, instalação, testes, integrantes) + diagrama + Swagger |
+
+### Fora do escopo (futuro)
+
+Funcionalidades de inteligência artificial (insights automáticos), IoT e app mobile **não** fazem parte desta entrega; ficam como evolução planejada do produto.
+
+### Tecnologias
+
+* ASP.NET Core Web API (.NET 8) e C#
 * Clean Architecture (Domain, Application, Infrastructure, API)
-* Entity Framework Core + Oracle Entity Framework Core Provider
+* Entity Framework Core + Oracle EF Core Provider
 * MongoDB.Driver (auditoria NoSQL)
 * Swagger / OpenAPI
-* JWT Bearer (autenticação; sem ASP.NET Identity — opção “JWT ou Identity” da rubrica)
+* JWT Bearer
+* Serilog (logging estruturado) e OpenTelemetry (tracing/métricas)
 * Microsoft.Extensions.Diagnostics.HealthChecks
-* Serilog (logging estruturado)
-* OpenTelemetry (tracing e métricas — export console)
-* xUnit / Moq / WebApplicationFactory / Coverlet
-* C#
+* xUnit, Moq, WebApplicationFactory, Coverlet
 
 ---
 
-## Arquitetura (Clean Architecture)
+## 2. Arquitetura
 
-A solução está separada em quatro projetos:
+### Camadas
 
 | Camada | Projeto | Responsabilidade |
 |--------|---------|------------------|
-| **Domain** | `ChallengerPetCenter.Domain` | Entidades, regras de domínio e exceções de negócio |
+| **Domain** | `ChallengerPetCenter.Domain` | Entidades, regras de domínio, exceções de negócio |
 | **Application** | `ChallengerPetCenter.Application` | Services, DTOs, interfaces de repositório, Unit of Work |
-| **Infrastructure** | `ChallengerPetCenter.Infrastructure` | EF Core (Oracle), MongoDB, repositórios concretos, health checks de infra |
+| **Infrastructure** | `ChallengerPetCenter.Infrastructure` | EF Core (Oracle), MongoDB, repositórios concretos, health checks |
 | **API** | `ChallengerPetCenter.API` | Controllers, Swagger, JWT, middleware, HATEOAS, exception handler |
+| **Testes** | `UnitTests` / `IntegrationTests` | Cobertura Domain/Application + smoke HTTP |
 
-Dependências fluem **para dentro**: API → Application/Infrastructure; Infrastructure → Application/Domain; Application → Domain. O Domain não depende de nenhuma outra camada.
+Dependências fluem **para dentro**: API → Application/Infrastructure; Infrastructure → Application/Domain; Application → Domain. O Domain não referencia outras camadas.
 
 ### Diagrama de arquitetura
 
 ```mermaid
 flowchart TB
   subgraph Clients
-    SwaggerUI[Swagger UI / HTTP Client]
+    SwaggerUI[Swagger UI / Cliente HTTP]
   end
 
-  subgraph API["ChallengerPetCenter.API"]
+  subgraph API["API — ChallengerPetCenter.API"]
     Controllers[Controllers + HATEOAS]
     Middleware[Serilog / CorrelationId / ExceptionHandler]
     Health[Health Checks]
     AuthJwt[JWT Bearer]
   end
 
-  subgraph Application["ChallengerPetCenter.Application"]
-    Services[Application Services]
+  subgraph Application["Application"]
+    Services[Services]
     DTOs[DTOs / Paging]
     RepoAbs[IRepository / IUnitOfWork]
   end
 
-  subgraph Domain["ChallengerPetCenter.Domain"]
+  subgraph Domain["Domain"]
     Entities[Entities]
     Rules[Domain Rules]
   end
 
-  subgraph Infrastructure["ChallengerPetCenter.Infrastructure"]
+  subgraph Infrastructure["Infrastructure"]
     EfRepos[EF Core Repositories]
     MongoRepo[MongoAuditLogRepository]
     Uow[UnitOfWork]
   end
 
-  subgraph Data
-    Oracle[(Oracle DB)]
-    Mongo[(MongoDB)]
+  subgraph Data["Persistência"]
+    Oracle[(Oracle — relacional)]
+    Mongo[(MongoDB — audit_logs)]
   end
 
   SwaggerUI --> Controllers
@@ -123,314 +174,327 @@ flowchart TB
   MongoRepo --> Mongo
 ```
 
----
+### Estrutura de pastas
 
-## Paginação, ordenação, filtros e HATEOAS
-
-Nos endpoints de **consulta** (GET de listagem e GET por id), a API retorna:
-
-* **Listagens:** `PagedResponseDto` com `items`, `page`, `pageSize`, `total` e `_links` (`self`, `prev`, `next`, `create`)
-* **Recurso único / create:** `ResourceResponseDto` com `data` e `_links` (`self`, `update`, `delete`)
-
-Query params padrão nas listagens:
-
-| Param | Descrição | Default |
-|-------|-----------|---------|
-| `page` | Página (1-based) | `1` |
-| `pageSize` | Itens por página (máx. 100) | `10` (audit-logs: `20`) |
-| `sort` | Campo de ordenação | varia por recurso |
-| `order` | `asc` ou `desc` | `asc` / `desc` conforme recurso |
-
-Filtros adicionais por recurso (query string), por exemplo:
-
-* `/api/users?tipoUsuario=TUTOR`
-* `/api/pets?especie=Gato&nome=Luna&userId=1`
-* `/api/veterinarios?especialidade=Clínica Geral`
-* `/api/registros?tipo=ALIMENTACAO&diarioEntradaId=12`
-* `/api/solicitacoes?status=PENDENTE&tutorId=26`
-* `/api/petveterinarios?ativo=1`
-* `/api/audit-logs?entity=User&action=USER_CREATED`
-
-Rotas filtradas legadas (`/api/pets/user/{userId}`, `/api/registros/tipo/{tipo}`, etc.) continuam disponíveis e também retornam o envelope paginado com HATEOAS.
+```text
+ChallengerPetCenter/
+├── ChallengerPetCenter.Domain/
+├── ChallengerPetCenter.Application/
+├── ChallengerPetCenter.Infrastructure/
+│   ├── Migrations/          # EF Core (Oracle)
+│   ├── Mongo/               # documentos e settings
+│   └── Repositories/        # EF + MongoAuditLogRepository
+├── ChallengerPetCenter.API/
+│   ├── Controllers/
+│   ├── Hateoas/
+│   ├── HealthChecks/
+│   └── Exceptions/
+├── ChallengerPetCenter.UnitTests/
+├── ChallengerPetCenter.IntegrationTests/
+├── coverlet.runsettings
+└── README.md
+```
 
 ---
 
-## Persistência (Oracle + MongoDB)
+## 3. Instalação e execução
 
-* **Oracle (relacional):** Entity Framework Core, `AppDbContext`, migrations em `ChallengerPetCenter.Infrastructure/Migrations`, repositórios concretos + `UnitOfWork`.
-* **MongoDB (NoSQL):** trilha de auditoria (`audit_logs`) via `MongoAuditLogRepository`; consulta em `GET /api/audit-logs`. Se `MongoConnection` estiver vazia, a API sobe com `NoOpAuditLogService` (auditoria desabilitada).
+### Pré-requisitos
 
-Connection strings em `appsettings.json`:
+* .NET 8 SDK
+* Visual Studio 2022 / VS Code / Rider (opcional)
+* Oracle Database (local ou Oracle FIAP)
+* MongoDB Community (local) ou MongoDB Atlas — para auditoria
+* Oracle SQL Developer / MongoDB Compass (opcional, inspeção)
+
+### Clonar
+
+```bash
+git clone https://github.com/JuliaTButtler/ChallengerPetCenter.git
+cd ChallengerPetCenter
+```
+
+### Configurar conexões
+
+Edite `ChallengerPetCenter.API/appsettings.json` (ou `appsettings.Development.json`):
 
 ```json
 "ConnectionStrings": {
-  "OracleConnection": "User Id=...;Password=...;Data Source=...;",
+  "OracleConnection": "User Id=SEU_USUARIO;Password=SUA_SENHA;Data Source=localhost:1521/XEPDB1;",
   "MongoConnection": "mongodb://localhost:27017/PetCenter"
 }
 ```
 
+> Se `MongoConnection` estiver vazia, a API sobe normalmente com auditoria **NoOp** (não grava no Mongo).
+
+### Migrations (Oracle)
+
+```bash
+dotnet ef database update --project ChallengerPetCenter.Infrastructure --startup-project ChallengerPetCenter.API
+```
+
+### Rodar a API
+
+```bash
+dotnet run --project ChallengerPetCenter.API --launch-profile http
+```
+
+| Recurso | URL |
+|---------|-----|
+| Swagger UI | http://localhost:5032/swagger |
+| OpenAPI JSON | http://localhost:5032/swagger/v1/swagger.json |
+| Health | http://localhost:5032/health |
+
 ---
 
-## Health Checks (Monitoramento)
+## 4. MongoDB (auditoria NoSQL)
 
-A API expõe endpoints de saúde com `Microsoft.Extensions.Diagnostics.HealthChecks`:
+### Como funciona
 
-| Endpoint | O que verifica |
-|----------|----------------|
-| `GET /health` ou `GET /healthz` | Todos os checks (visão geral) |
-| `GET /health/live` | Processo da API (liveness / self) |
-| `GET /health/ready` | Oracle + serviço externo (readiness) |
+1. Operações de negócio (create/update/delete em Users, Pets, Veterinários, etc.) chamam `IAuditLogService.WriteAsync` de forma **best-effort** (falha no Mongo **não** derruba o CRUD).
+2. A Infrastructure grava documentos na collection **`audit_logs`** do database **`PetCenter`** via `MongoAuditLogRepository`.
+3. A consulta é pública via `GET /api/audit-logs` (paginação, filtros e HATEOAS).
+4. Health Check `mongodb` faz ping quando a connection string está configurada.
 
-Checks registrados:
+Campos típicos do documento:
 
-* **self** — API em execução
-* **oracle** — conectividade com o banco via `AddDbContextCheck<AppDbContext>`
-* **mongodb** — ping no MongoDB (quando `MongoConnection` está configurada)
-* **external_service** — HTTP GET em URL configurável (`HealthChecks:ExternalServiceUrl` no `appsettings.json`). Se a URL estiver vazia, o check reporta Healthy com mensagem explicativa.
+| Campo | Exemplo |
+|-------|---------|
+| `Action` | `USER_CREATED`, `PET_CREATED`, `VETERINARIO_CREATED` |
+| `Entity` | `User`, `Pet`, `Veterinario` |
+| `EntityId` | `"62"` |
+| `OccurredAt` | data/hora UTC |
+| `PayloadJson` | resumo JSON da operação |
 
-Exemplo de resposta JSON (status Healthy):
+### Como testar o Mongo
+
+**A) Pela API **
+
+1. Suba o Mongo e a API com `MongoConnection` preenchida.
+2. Abra http://localhost:5032/health e confira `mongodb` = **Healthy**.
+3. Faça POSTs no Swagger (criar user/pet etc.).
+4. Chame:
+
+```http
+GET /api/audit-logs?page=1&pageSize=10
+GET /api/audit-logs?entity=User
+GET /api/audit-logs?action=PET_CREATED
+```
+
+Resposta esperada: `items`, `page`, `pageSize`, `total`, `_links`.
+
+**B) Pelo MongoDB Compass**
+
+1. Conecte em `mongodb://localhost:27017`.
+2. Database **`PetCenter`** → collection **`audit_logs`**.
+3. Após os POSTs, clique em **Refresh** (o Compass não atualiza sozinho).
+4. Filtro opcional: `{ "Action": "USER_CREATED" }` — sort: `{ "OccurredAt": -1 }`.
+
+Os mesmos eventos devem aparecer no Compass e no `GET /api/audit-logs`.
+
+---
+
+## 5. Autenticação JWT
+
+* `POST /api/auth/login` — público; retorna `token`
+* `GET /api/auth/me` — requer JWT
+* Mutations (POST/PUT/DELETE de negócio, exceto criar usuário) — requerem JWT
+* `POST /api/users` — **público** (cadastro)
+
+Configuração: seção `Jwt` no `appsettings.json` (`Key`, `Issuer`, `Audience`, `ExpirationMinutes`).
+
+> Autenticação via **JWT Bearer** (sem ASP.NET Identity), atendendo o requisito “JWT ou Identity”.
+
+### Authorize no Swagger
+
+1. Execute o login e copie **somente** o valor de `token` (string `eyJ...`).
+2. Clique no cadeado **Authorize**.
+3. Cole o token **sem** escrever `Bearer ` na frente (o Swagger já adiciona).
+4. Authorize → Close.
+5. Teste `GET /api/auth/me` → deve retornar **200**.
+
+Erro comum: colar `Bearer eyJ...` → vira `Bearer Bearer ...` → **401 invalid_token**.
+
+---
+
+## 6. Paginação, filtros e HATEOAS
+
+### Listagens (`GET` de coleção)
+
+Envelope:
 
 ```json
 {
-  "status": "Healthy",
-  "totalDuration": "00:00:00.12",
-  "entries": {
-    "self": { "status": "Healthy", "description": "API ChallengerPetCenter está em execução." },
-    "oracle": { "status": "Healthy" },
-    "external_service": { "status": "Healthy", "description": "Serviço externo respondendo: https://www.google.com (200)." }
-  }
+  "items": [ ... ],
+  "page": 1,
+  "pageSize": 10,
+  "total": 5,
+  "_links": [
+    { "rel": "self", "href": "/api/users?page=1&pageSize=10&sort=id&order=asc", "method": "GET" },
+    { "rel": "create", "href": "/api/users", "method": "POST" }
+  ]
 }
 ```
 
-Como testar: com a API rodando (`dotnet run`), abra no navegador ou via curl:
+Com `pageSize` menor que o `total`, aparecem também `next` / `prev`.
 
-```text
-http://localhost:<porta>/health
-http://localhost:<porta>/health/live
-http://localhost:<porta>/health/ready
-```
+Query params comuns: `page`, `pageSize` (máx. 100), `sort`, `order`, mais filtros por recurso.
 
----
+### Recurso único / create
 
-## Logging Estruturado (Serilog)
-
-A API usa **Serilog** no lugar do logging padrão do ASP.NET Core.
-
-### Saídas
-* **Console** — durante `dotnet run`
-* **Arquivo** — `logs/challenger-pet-center-YYYYMMDD.log` (rolling diário, retém 14 dias)
-
-### Níveis
-* Padrão da aplicação: **Information**
-* Warnings/Erros de request HTTP: status `4xx` → Warning; `5xx` ou exception → Error
-* Framework (`Microsoft.*`, EF Core): **Warning** (para reduzir ruído)
-
-### Correlação de requisições
-* Middleware `CorrelationIdMiddleware` gera ou propaga o header `X-Correlation-ID`
-* Cada log inclui `CorrelationId` e `RequestId` (TraceIdentifier)
-* `UseSerilogRequestLogging` registra método, path, status e tempo de resposta
-
-### Como observar
-1. Rode `dotnet run` e faça uma chamada (ex.: `/health` ou `/api/users`)
-2. No console, veja linhas no formato: `[HH:mm:ss INF] (correlationId/requestId) HTTP GET /health respondeu 200 em ... ms`
-3. Confira o mesmo conteúdo em `logs/challenger-pet-center-*.log`
-4. Opcional: envie o header `X-Correlation-ID: meu-id-teste` e confira se ele aparece nos logs e na resposta
-
----
-
-## OpenTelemetry (Tracing e Métricas)
-
-Observabilidade **local**, sem Application Insights / cloud.
-
-### O que está instrumentado
-* **AspNetCore** — cada request HTTP gera um span (ex.: `GET /api/users`)
-* **HttpClient** — chamadas externas (ex.: health check do Google) entram no mesmo fluxo de tracing
-
-Rotas `/health*` e `/swagger*` são filtradas do tracing para reduzir ruído.
-
-### Métricas
-* Instrumentation AspNetCore/HttpClient (duração de request, contagem, erros)
-* Exportadas no console a cada ~15 segundos
-
-### Configuração (`appsettings.json`)
 ```json
-"OpenTelemetry": {
-  "ServiceName": "ChallengerPetCenter",
-  "EnableConsoleExporters": true
+{
+  "data": { "id": 23, "nome": "Shouko", ... },
+  "_links": [
+    { "rel": "self", "href": "/api/users/23", "method": "GET" },
+    { "rel": "update", "href": "/api/users/23", "method": "PUT" },
+    { "rel": "delete", "href": "/api/users/23", "method": "DELETE" }
+  ]
 }
 ```
 
-### Como observar
-1. `dotnet run`
-2. Chame `GET /api/users` (ou outro endpoint de negócio)
-3. No terminal, além do Serilog, aparecem blocos do exporter OpenTelemetry (Activity/spans e, periodicamente, métricas)
-
-Não há dependência de collector OTLP nem de Azure nesta entrega.
+Todos os endpoints de consulta principais (Users, Pets, Veterinários, Diário, Comentários, Registros, Solicitações, PetVeterinários, Audit Logs) usam esse padrão.
 
 ---
 
-## Autenticação JWT (mínima)
+## 7. Documentação dos endpoints
 
-* `POST /api/auth/login` — email + senha → retorna Bearer token
-* `GET /api/auth/me` — requer JWT (**401** sem token)
-* `DELETE /api/users/{id}` — requer JWT
+Documentação interativa e schemas: **http://localhost:5032/swagger**  
+Especificação OpenAPI exportável: **http://localhost:5032/swagger/v1/swagger.json** (salvar a página / baixar o JSON).
 
-Configuração em `appsettings.json` (`Jwt:Key`, `Issuer`, `Audience`, `ExpirationMinutes`).
+### Auth
 
-Cada login gera um token ligado àquele usuário (claims: id, email, tipo). O token vale até expirar (padrão 120 minutos); não há blacklist — apagar o usuário não invalida o token imediatamente.
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| POST | `/api/auth/login` | Não | Login → JWT |
+| GET | `/api/auth/me` | Sim | Usuário autenticado |
 
-> Observação: a senha ainda é comparada em texto puro (mínimo acadêmico). Hash seria evolução futura.
+### Users
 
-Veja o **Guia de testes manuais no Swagger** mais abaixo para exemplos completos de login e Authorize.
-
----
-
-## Testes Automatizados
-
-A solution inclui projetos separados por camada:
-
-* `ChallengerPetCenter.UnitTests` — Domain (regras puras, sem EF/Moq) + Application (Moq dos repos) + Controllers
-* `ChallengerPetCenter.IntegrationTests` — `WebApplicationFactory` + EF InMemory + Collection Fixture
-
-Nomenclatura: `Metodo_Cenario_Resultado` (ex.: `CreateAsync_QuandoEmailJaExiste_RetornaFailure`). AAA visível em cada teste.
-
-### O que é coberto
-
-**Domain (unitário):** email inválido, diário duplicado no mesmo dia, pet sem tutor, usuário inativo.
-
-**Application (Moq):** por agregado — create ok, create com regra, get not found, delete; Auth — ok / senha inválida / inativo. Inclui **Comentario** e **Registro**.
-
-**Integração:** Users + Auth + Pets (HTTP com JWT); `401` sem token; `/health/live` e `/health/ready`.
-
-```bash
-dotnet test ChallengerPetCenter.sln
-```
-
-### Cobertura (Domain + Application)
-
-Coletor apontado só para Domain/Application via `coverlet.runsettings` (Controllers/Program ficam de fora do alvo).
-
-```bash
-dotnet test ChallengerPetCenter.sln --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory ./TestResults
-```
-
-| Assembly | Line coverage |
-|----------|---------------|
-| `ChallengerPetCenter.Domain` | **94,9%** |
-| `ChallengerPetCenter.Application` | **91,5%** |
-| Combinado (Domain + Application) | **92,0%** |
-
-**Importante:** use o relatório gerado pelo projeto **UnitTests** (Domain + Application ≈ **92%**). O Cobertura produzido só pelos IntegrationTests pode mostrar ~40% porque cobre menos código das camadas-alvo — não use esse arquivo como evidência de cobertura.
-
-Relatório esperado: pasta em `TestResults/` correspondente à execução dos UnitTests (`coverage.cobertura.xml`).
-
-Para testes manuais com exemplos de body, use a seção **Guia de testes manuais no Swagger**.
-
----
-
-## Funcionalidades Implementadas
-
-### Usuários
-
-* Cadastro de usuários
-* Consulta de usuários
-* Atualização de usuários
-* Remoção de usuários (requer JWT)
-
-### Autenticação
-
-* Login com JWT (`POST /api/auth/login`)
-* Perfil autenticado (`GET /api/auth/me`)
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/users?page&pageSize&sort&order&tipoUsuario` | Não | Lista paginada + HATEOAS |
+| GET | `/api/users/{id}` | Não | Por ID + HATEOAS |
+| GET | `/api/users/email/{email}` | Não | Por email |
+| GET | `/api/users/tipo/{tipo}` | Não | Lista filtrada |
+| POST | `/api/users` | Não | Criar |
+| PUT | `/api/users/{id}` | Sim | Atualizar |
+| DELETE | `/api/users/{id}` | Sim | Remover |
 
 ### Veterinários
 
-* Cadastro de veterinários
-* Busca por CRMV
-* Busca por especialidade
-* Associação com usuários
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/veterinarios?...&especialidade&userId` | Não | Lista + HATEOAS |
+| GET | `/api/veterinarios/{id}` · `/crmv/{crmv}` · `/user/{userId}` | Não | Recurso |
+| GET | `/api/veterinarios/especialidade/{especialidade}` | Não | Lista filtrada |
+| POST / PUT / DELETE | `/api/veterinarios` · `/{id}` | Sim | Mutations |
 
 ### Pets
 
-* Cadastro de pets
-* Associação com tutores
-* Consulta de pets
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/pets?...&especie&nome&userId` | Não | Lista + HATEOAS |
+| GET | `/api/pets/{id}` | Não | Por ID |
+| GET | `/api/pets/user/{userId}` · `/especie/{especie}` · `/nome/{nome}` | Não | Filtros |
+| POST / PUT / DELETE | `/api/pets` · `/{id}` | Sim | Mutations |
 
-### Diário do Pet
+### Diário de Entradas
 
-* Criação de entradas diárias
-* Organização cronológica
-* Controle de uma entrada por pet por dia
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/diarioentradas?page&pageSize&sort&order&status&humor&petId` | Não | Lista paginada + HATEOAS |
+| GET | `/api/diarioentradas/{id}` | Não | Por ID + HATEOAS |
+| GET | `/api/diarioentradas/pet/{petId}` | Não | Lista filtrada por pet |
+| GET | `/api/diarioentradas/status/{status}` | Não | Lista filtrada por status |
+| POST | `/api/diarioentradas` | Sim | Criar (1 entrada por pet/dia) |
+| PUT | `/api/diarioentradas/{id}` | Sim | Atualizar |
+| DELETE | `/api/diarioentradas/{id}` | Sim | Remover |
 
 ### Registros
 
-* Registros de alimentação
-* Sintomas
-* Comportamentos
-* Atividades
-* Observações complementares
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/registros?page&pageSize&sort&order&tipo&subtipo&diarioEntradaId` | Não | Lista paginada + HATEOAS |
+| GET | `/api/registros/{id}` | Não | Por ID + HATEOAS |
+| GET | `/api/registros/diario/{diarioEntradaId}` | Não | Lista da entrada do diário |
+| GET | `/api/registros/tipo/{tipo}` | Não | Lista filtrada por tipo |
+| GET | `/api/registros/subtipo/{subtipo}` | Não | Lista filtrada por subtipo |
+| POST | `/api/registros` | Sim | Criar |
+| PUT | `/api/registros/{id}` | Sim | Atualizar |
+| DELETE | `/api/registros/{id}` | Sim | Remover |
 
 ### Comentários
 
-* Comentários em entradas do diário
-* Associação entre usuários e entradas
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/comentarios?page&pageSize&sort&order&diarioEntradaId&userId&texto` | Não | Lista paginada + HATEOAS |
+| GET | `/api/comentarios/{id}` | Não | Por ID + HATEOAS |
+| GET | `/api/comentarios/diario/{diarioEntradaId}` | Não | Lista da entrada do diário |
+| GET | `/api/comentarios/user/{userId}` | Não | Lista por usuário |
+| GET | `/api/comentarios/texto/{texto}` | Não | Lista por texto |
+| POST | `/api/comentarios` | Sim | Criar |
+| PUT | `/api/comentarios/{id}` | Sim | Atualizar |
+| DELETE | `/api/comentarios/{id}` | Sim | Remover |
 
 ### Solicitações
 
-* Solicitações entre tutores e veterinários
-* Controle de status
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/solicitacoes?page&pageSize&sort&order&status&petId&tutorId&veterinarioId` | Não | Lista paginada + HATEOAS |
+| GET | `/api/solicitacoes/{id}` | Não | Por ID + HATEOAS |
+| GET | `/api/solicitacoes/pet/{petId}` | Não | Lista por pet |
+| GET | `/api/solicitacoes/tutor/{tutorId}` | Não | Lista por tutor |
+| GET | `/api/solicitacoes/veterinario/{veterinarioId}` | Não | Lista por veterinário |
+| GET | `/api/solicitacoes/status/{status}` | Não | Lista por status |
+| POST | `/api/solicitacoes` | Sim | Criar |
+| PUT | `/api/solicitacoes/{id}` | Sim | Atualizar |
+| DELETE | `/api/solicitacoes/{id}` | Sim | Remover |
 
-### Relacionamento Pet-Veterinário
+### Relacionamento Pet–Veterinário
 
-* Associação entre pets e veterinários
-* Histórico de acompanhamento
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/petveterinarios?page&pageSize&sort&order&petId&veterinarioId&ativo` | Não | Lista paginada + HATEOAS |
+| GET | `/api/petveterinarios/{id}` | Não | Por ID + HATEOAS |
+| GET | `/api/petveterinarios/pet/{petId}` | Não | Vínculos do pet |
+| GET | `/api/petveterinarios/veterinario/{veterinarioId}` | Não | Vínculos do veterinário |
+| GET | `/api/petveterinarios/ativos` | Não | Somente vínculos ativos |
+| POST | `/api/petveterinarios` | Sim | Criar vínculo |
+| PUT | `/api/petveterinarios/{id}` | Sim | Atualizar |
+| DELETE | `/api/petveterinarios/{id}` | Sim | Remover |
 
-### Auditoria (MongoDB)
+### Audit Logs (MongoDB)
 
-* Gravação best-effort de ações de negócio
-* Consulta paginada com filtros e HATEOAS em `GET /api/audit-logs`
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/api/audit-logs?entity&entityId&action&page&pageSize` | Não | Consulta NoSQL + HATEOAS |
 
-### Monitoramento
+### Health
 
-* Health Checks (`/health`, `/health/live`, `/health/ready`) — Oracle, MongoDB e serviço externo
-* Logging estruturado com Serilog (console + arquivo, CorrelationId)
-* OpenTelemetry (tracing + métricas no console)
-* JWT (login + endpoints protegidos)
-
----
-
-## Objetivo da API
-
-A API foi desenvolvida seguindo o padrão REST, utilizando boas práticas de:
-
-* Clean Architecture + SOLID + injeção de dependência
-* Controllers finos + Services + DTOs + repositórios
-* Paginação, ordenação, filtros e HATEOAS nas consultas
-* Oracle (EF Core) + MongoDB (auditoria)
-* Documentação com Swagger/OpenAPI
-* Observabilidade (Health Checks, Serilog, OpenTelemetry)
-* Autenticação JWT
-* Testes automatizados (unitários e integração) com cobertura Domain/Application
-
-### Como subir a API
-
-```bash
-dotnet run
-```
-
-Swagger (perfil http): http://localhost:5032/swagger
-
-### Como rodar os testes automatizados
-
-```bash
-dotnet test ChallengerPetCenter.sln
-```
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/health` · `/healthz` | Todos os checks |
+| GET | `/health/live` | Liveness (self) |
+| GET | `/health/ready` | Readiness (Oracle, Mongo se configurado, external) |
 
 ---
 
-## Guia de testes manuais no Swagger (POST)
+## 8. Guia de testes no Swagger
 
-Use este fluxo na ordem. Em cada POST: abra o endpoint → **Try it out** → cole o JSON → **Execute**.  
-Os IDs (`userId`, `petId`, etc.) devem ser os retornados nas respostas anteriores (não copie IDs inventados se o banco já tiver outros registros).
+Ordem sugerida. Em cada POST: **Try it out** → cole o JSON → **Execute**.  
+**Anote os IDs** retornados (`data.id`) — não use IDs de exemplo se o seu banco for outro.
+
+### Checklist rápido (demo / professor)
+
+1. `dotnet test ChallengerPetCenter.sln` → verde  
+2. `/health` → `oracle` + `mongodb` Healthy  
+3. `GET /api/users?page=1&pageSize=2` → `items` + `_links` (com `next` se houver mais de 2)  
+4. Login → Authorize (só o token) → `GET /api/auth/me` → 200  
+5. Fluxo de POSTs abaixo → `GET /api/audit-logs` → eventos no Mongo/Compass  
+6. Mutation sem token → **401**
+
+---
 
 ### Passo 1 — Criar tutor
 
@@ -439,14 +503,14 @@ Os IDs (`userId`, `petId`, etc.) devem ser os retornados nas respostas anteriore
 ```json
 {
   "nome": "Camila Ferreira",
-  "email": "camila.ferreira@email.com",
+  "email": "camila.demo@email.com",
   "senha": "Camila@2024",
   "telefone": "11987654321",
   "tipoUsuario": "TUTOR"
 }
 ```
 
-Espere **201**. Anote o `id` do tutor (ex.: `26`).
+Esperado: **201** com `data` + `_links`. Anote o `id` do tutor.
 
 ### Passo 2 — Criar usuário veterinário
 
@@ -455,14 +519,14 @@ Espere **201**. Anote o `id` do tutor (ex.: `26`).
 ```json
 {
   "nome": "Ricardo Almeida",
-  "email": "ricardo.almeida@email.com",
+  "email": "ricardo.demo@email.com",
   "senha": "Ricardo@2024",
   "telefone": "11976543210",
   "tipoUsuario": "VETERINARIO"
 }
 ```
 
-Anote o `id` do usuário veterinário (ex.: `27`).
+Anote o `id` do usuário veterinário.
 
 ### Passo 3 — Login (JWT)
 
@@ -470,15 +534,14 @@ Anote o `id` do usuário veterinário (ex.: `27`).
 
 ```json
 {
-  "email": "camila.ferreira@email.com",
+  "email": "camila.demo@email.com",
   "senha": "Camila@2024"
 }
 ```
 
-Copie o `token`. No Swagger, clique em **Authorize**, cole o token e confirme.  
-Opcional: `GET /api/auth/me` deve retornar **200** com o email da Camila.
+Copie o `token` → **Authorize** (sem `Bearer `) → `GET /api/auth/me` → **200**.
 
-### Passo 4 — Perfil de veterinário
+### Passo 4 — Perfil de veterinário (requer JWT)
 
 `POST /api/veterinarios`  
 (substitua `userId` pelo id do Ricardo)
@@ -488,13 +551,13 @@ Opcional: `GET /api/auth/me` deve retornar **200** com o email da Camila.
   "crmv": "SP-45872",
   "especialidade": "Clínica Geral",
   "descricao": "Atendimento de cães e gatos, com foco em acompanhamento preventivo.",
-  "userId": 27
+  "userId": 63
 }
 ```
 
-Anote o `id` do veterinário (ex.: `5`).
+Anote o `id` do veterinário.
 
-### Passo 5 — Cadastrar o pet
+### Passo 5 — Cadastrar o pet (requer JWT)
 
 `POST /api/pets`  
 (substitua `userId` pelo id da Camila)
@@ -506,43 +569,44 @@ Anote o `id` do veterinário (ex.: `5`).
   "raca": "Siamês",
   "dataNascimento": "2022-03-15T00:00:00",
   "observacoes": "Alimentação controlada e rotina de brincadeiras à noite.",
-  "userId": 26
+  "userId": 62
 }
 ```
 
-Anote o `id` do pet (ex.: `8`).
+Anote o `id` do pet.
 
-### Passo 6 — Vincular pet e veterinário
+### Passo 6 — Vincular pet e veterinário (requer JWT)
 
 `POST /api/petveterinarios`
 
 ```json
 {
-  "petId": 8,
-  "veterinarioId": 5,
-  "dataInicio": "2026-09-01T10:00:00",
+  "petId": 21,
+  "veterinarioId": 21,
+  "dataInicio": "2026-11-03T10:00:00",
   "observacoes": "Acompanhamento mensal de rotina."
 }
 ```
 
-### Passo 7 — Entrada no diário
+> Troque `petId` / `veterinarioId` pelos IDs reais dos passos 4 e 5.
+
+### Passo 7 — Entrada no diário (requer JWT)
 
 `POST /api/diarioentradas`
 
 ```json
 {
-  "data": "2026-09-11T00:00:00",
+  "data": "2026-11-03T00:00:00",
   "resumo": "Dia calmo em casa, brincou após o almoço.",
   "humorGeral": "TRANQUILO",
   "status": "ATIVO",
-  "petId": 8
+  "petId": 21
 }
 ```
 
-Anote o `id` da entrada (ex.: `12`).  
-Regra: só **uma entrada por pet por dia**.
+Regra: **uma entrada por pet por dia**. Anote o `id` da entrada.
 
-### Passo 8 — Registro do dia (alimentação)
+### Passo 8 — Registro do dia (requer JWT)
 
 `POST /api/registros`
 
@@ -553,71 +617,74 @@ Regra: só **uma entrada por pet por dia**.
   "valor": 80,
   "unidade": "g",
   "nota": "Comeu bem a porção da manhã.",
-  "horario": "2026-09-11T08:30:00",
-  "diarioEntradaId": 12
+  "horario": "2026-11-03T08:30:00",
+  "diarioEntradaId": 21
 }
 ```
 
-Outro exemplo (sintoma):
+### Passo 9 — Comentário (requer JWT)
 
-```json
-{
-  "tipo": "SINTOMA",
-  "subtipo": "APETITE",
-  "valor": null,
-  "unidade": null,
-  "nota": "Apetite levemente reduzido no final da tarde.",
-  "horario": "2026-09-11T17:00:00",
-  "diarioEntradaId": 12
-}
-```
-
-### Passo 9 — Comentário no diário
-
-`POST /api/comentarios`  
-(`userId` pode ser o da Camila ou do Ricardo)
+`POST /api/comentarios`
 
 ```json
 {
   "textoComentario": "Manter a rotina alimentar e observar o apetite pelos próximos dois dias.",
-  "diarioEntradaId": 12,
-  "userId": 27
+  "diarioEntradaId": 21,
+  "userId": 63
 }
 ```
 
-### Passo 10 — Solicitação de acompanhamento
+### Passo 10 — Solicitação (requer JWT)
 
 `POST /api/solicitacoes`  
-(`tutorId` deve ser o dono do pet)
+(`tutorId` = dono do pet)
 
 ```json
 {
   "status": "PENDENTE",
   "mensagem": "Gostaria de uma orientação sobre a mudança de apetite da Luna.",
-  "petId": 8,
-  "tutorId": 26,
-  "veterinarioId": 5
+  "petId": 21,
+  "tutorId": 62,
+  "veterinarioId": 21
 }
 ```
 
-Se `status` for omitido, a API assume `PENDENTE`.
+### Passo 11 — Validar HATEOAS / paginação
 
-### Cenários de erro úteis
+```http
+GET /api/users?page=1&pageSize=2&sort=nome&order=asc
+GET /api/pets?especie=Gato
+GET /api/veterinarios?especialidade=Clínica Geral
+GET /api/users/62
+```
 
-| Ação | Body / situação | Esperado |
-|------|-----------------|----------|
-| Email duplicado | mesmo email da Camila em `POST /api/users` | **400** |
-| Login errado | senha incorreta no login | **400** |
-| `/api/auth/me` sem Authorize | — | **401** |
-| Segunda entrada no mesmo dia | mesmo `petId` + mesma `data` | **400** |
-| Solicitação com tutor errado | `tutorId` diferente do dono do pet | **400** |
-| `DELETE /api/users/{id}` sem token | — | **401** |
+Confira `items`/`total`/`_links` nas listas e `data`/`_links` no GET por id.
 
-### Campos dos POST (referência rápida)
+### Passo 12 — Validar Mongo / audit logs
+
+```http
+GET /api/audit-logs?page=1&pageSize=10
+GET /api/audit-logs?entity=User&action=USER_CREATED
+```
+
+Opcional: Compass → `PetCenter.audit_logs` → Refresh.
+
+### Cenários de erro
+
+| Situação | Esperado |
+|----------|----------|
+| Email duplicado no `POST /api/users` | **400** |
+| Login com senha errada | **400** |
+| `/api/auth/me` sem Authorize | **401** |
+| `POST /api/pets` sem token | **401** |
+| Segunda entrada no mesmo dia/pet | **400** |
+| Solicitação com `tutorId` ≠ dono do pet | **400** |
+
+### Campos dos POST (referência)
 
 | Endpoint | Campos |
 |----------|--------|
-| `POST /api/users` | `nome*`, `email*`, `senha*`, `telefone`, `tipoUsuario*` (`TUTOR` ou `VETERINARIO`) |
+| `POST /api/users` | `nome*`, `email*`, `senha*`, `telefone`, `tipoUsuario*` (`TUTOR` \| `VETERINARIO`) |
 | `POST /api/auth/login` | `email*`, `senha*` |
 | `POST /api/veterinarios` | `crmv*`, `especialidade`, `descricao`, `userId*` |
 | `POST /api/pets` | `nome*`, `especie*`, `raca`, `dataNascimento`, `observacoes`, `userId*` |
@@ -631,279 +698,56 @@ Se `status` for omitido, a API assume `PENDENTE`.
 
 ---
 
-# Documentação das Rotas
+## 9. Testes automatizados e cobertura
 
----
+### Projetos
 
-# Usuários
-
-### GET
-`/api/users?page&pageSize&sort&order&tipoUsuario`
-- Lista usuários (paginado + HATEOAS)
-
-### GET
-`/api/users/{id}`
-- Busca usuário por ID (HATEOAS)
-
-### GET
-`/api/users/email/{email}`
-- Busca usuário por email (HATEOAS)
-
-### GET
-`/api/users/tipo/{tipo}`
-- Lista por tipo (paginado + HATEOAS)
-
-### POST
-`/api/users`
-- Cria um novo usuário (público)
-
-### PUT / DELETE
-`/api/users/{id}`
-- Atualiza / remove (**requer JWT**)
-
----
-
-# Auth
-
-### POST
-`/api/auth/login`
-- Autentica e retorna JWT
-
-### GET
-`/api/auth/me`
-- Dados do usuário autenticado (**requer JWT**)
-
----
-
-# Veterinários
-
-### GET
-`/api/veterinarios?page&pageSize&sort&order&especialidade&userId`
-- Lista veterinários (paginado + HATEOAS)
-
-### GET
-`/api/veterinarios/{id}` · `/crmv/{crmv}` · `/user/{userId}`
-- Recurso único (HATEOAS)
-
-### GET
-`/api/veterinarios/especialidade/{especialidade}`
-- Lista filtrada (paginado + HATEOAS)
-
-### POST / PUT / DELETE
-- Mutations (**requer JWT**)
-
----
-
-# Pets
-
-### GET
-`/api/pets?page&pageSize&sort&order&especie&nome&userId`
-- Lista pets (paginado + HATEOAS)
-
-### GET
-`/api/pets/{id}`
-- Busca pet por ID (HATEOAS)
-
-### GET
-`/api/pets/user/{userId}` · `/especie/{especie}` · `/nome/{nome}`
-- Listas filtradas (paginado + HATEOAS)
-
-### POST / PUT / DELETE
-- Mutations (**requer JWT**)
-
----
-
-# Diário de Entradas
-
-### GET
-`/api/diarioentradas?page&pageSize&sort&order&status&humor&petId`
-- Lista entradas (paginado + HATEOAS)
-
-### GET
-`/api/diarioentradas/{id}`
-- Busca por ID (HATEOAS)
-
-### GET
-`/api/diarioentradas/pet/{petId}` · `/status/{status}`
-- Listas filtradas (paginado + HATEOAS)
-
-### POST / PUT / DELETE
-- Mutations (**requer JWT**)
-
----
-
-# Comentários
-
-### GET
-`/api/comentarios?page&pageSize&sort&order&diarioEntradaId&userId&texto`
-- Lista comentários (paginado + HATEOAS)
-
-### GET
-`/api/comentarios/{id}`
-- Busca por ID (HATEOAS)
-
-### GET
-`/api/comentarios/diario/{diarioEntradaId}` · `/user/{userId}` · `/texto/{texto}`
-- Listas filtradas (paginado + HATEOAS)
-
-### POST / PUT / DELETE
-- Mutations (**requer JWT**)
-
----
-
-# Registros
-
-### GET
-`/api/registros?page&pageSize&sort&order&tipo&subtipo&diarioEntradaId`
-- Lista registros (paginado + HATEOAS)
-
-### GET
-`/api/registros/{id}`
-- Busca por ID (HATEOAS)
-
-### GET
-`/api/registros/diario/{diarioEntradaId}` · `/tipo/{tipo}` · `/subtipo/{subtipo}`
-- Listas filtradas (paginado + HATEOAS)
-
-### POST / PUT / DELETE
-- Mutations (**requer JWT**)
-
----
-
-# Solicitações
-
-### GET
-`/api/solicitacoes?page&pageSize&sort&order&status&petId&tutorId&veterinarioId`
-- Lista solicitações (paginado + HATEOAS)
-
-### GET
-`/api/solicitacoes/{id}`
-- Busca por ID (HATEOAS)
-
-### GET
-`/api/solicitacoes/pet/{petId}` · `/tutor/{tutorId}` · `/veterinario/{veterinarioId}` · `/status/{status}`
-- Listas filtradas (paginado + HATEOAS)
-
-### POST / PUT / DELETE
-- Mutations (**requer JWT**)
-
----
-
-# Relacionamento Pet-Veterinário
-
-### GET
-`/api/petveterinarios?page&pageSize&sort&order&petId&veterinarioId&ativo`
-- Lista vínculos (paginado + HATEOAS)
-
-### GET
-`/api/petveterinarios/{id}`
-- Busca por ID (HATEOAS)
-
-### GET
-`/api/petveterinarios/pet/{petId}` · `/veterinario/{veterinarioId}` · `/ativos`
-- Listas filtradas (paginado + HATEOAS)
-
-### POST / PUT / DELETE
-- Mutations (**requer JWT**)
-
----
-
-# Audit Logs (MongoDB)
-
-### GET
-`/api/audit-logs?entity&entityId&action&page&pageSize`
-- Consulta auditoria NoSQL (paginado + HATEOAS `_links`)
-
----
-
-# Swagger / OpenAPI
-
-Com a API em execução, a documentação interativa fica em:
-
-http://localhost:5032/swagger
-
-(Perfil HTTPS conforme `launchSettings.json`.) O Swagger descreve schemas, query params de paginação/filtros e autenticação Bearer.
-
----
-
-# Instalação e Execução
-
-## Pré-requisitos
-
-- .NET 8 SDK
-- Visual Studio 2022 (opcional) ou VS Code / Rider
-- Oracle Database (ou acesso ao Oracle da FIAP)
-- MongoDB local ou remoto (opcional; sem connection string a auditoria fica NoOp)
-- Oracle SQL Developer (opcional, para inspecionar tabelas)
-
----
-
-# Clonar o repositório
+* **UnitTests** — Domain (regras) + Application (Moq) + alguns controllers; padrão AAA; nomes `Metodo_Cenario_Resultado`
+* **IntegrationTests** — `WebApplicationFactory`, EF InMemory; Users, Auth, Pets, Health
 
 ```bash
-git clone https://github.com/JuliaTButtler/ChallengerPetCenter.git
-cd ChallengerPetCenter
+dotnet test ChallengerPetCenter.sln
 ```
 
----
-
-# Configurar conexões
-
-Edite `ChallengerPetCenter.API/appsettings.json` (ou `appsettings.Development.json`):
-
-```json
-"ConnectionStrings": {
-  "OracleConnection": "User Id=SEU_USUARIO;Password=SUA_SENHA;Data Source=localhost:1521/XEPDB1;",
-  "MongoConnection": "mongodb://localhost:27017/PetCenter"
-}
-```
-
----
-
-# Executar as migrations
-
-As migrations já existem em `ChallengerPetCenter.Infrastructure/Migrations`. Para aplicar no banco:
+### Cobertura (Domain + Application)
 
 ```bash
-dotnet ef database update --project ChallengerPetCenter.Infrastructure --startup-project ChallengerPetCenter.API
+dotnet test ChallengerPetCenter.UnitTests --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory ./TestResults
 ```
+
+| Assembly | Line coverage |
+|----------|---------------|
+| `ChallengerPetCenter.Domain` | **94,9%** |
+| `ChallengerPetCenter.Application` | **91,5%** |
+| Combinado | **92,0%** |
+
+Use o `coverage.cobertura.xml` gerado pelos **UnitTests**. Relatório só dos IntegrationTests pode mostrar ~40% e **não** deve ser usado como evidência.
 
 ---
 
-# Executar a aplicação
+## 10. Observabilidade
 
-```bash
-dotnet run --project ChallengerPetCenter.API
-```
+### Health Checks
 
-Ou F5 no Visual Studio (perfil http/https).
+* `self`, `oracle`, `mongodb` (se configurado), `external_service`
+* Endpoints: `/health`, `/health/live`, `/health/ready`
 
-Swagger: http://localhost:5032/swagger
+### Serilog
 
----
+* Console + arquivo `logs/challenger-pet-center-YYYYMMDD.log`
+* Header `X-Correlation-ID` propagado nos logs e na resposta
 
-# Estrutura do Projeto
+### OpenTelemetry
 
-```text
-ChallengerPetCenter/
-├── ChallengerPetCenter.Domain/          # Entidades e regras
-├── ChallengerPetCenter.Application/     # Services, DTOs, abstrações
-├── ChallengerPetCenter.Infrastructure/  # EF/Oracle, Mongo, repositórios
-├── ChallengerPetCenter.API/             # Controllers, JWT, health, Swagger
-├── ChallengerPetCenter.UnitTests/
-├── ChallengerPetCenter.IntegrationTests/
-├── coverlet.runsettings
-└── README.md
-```
+* Tracing e métricas AspNetCore/HttpClient exportados no console (sem cloud)
 
 ---
 
-# Observações
+## Observações finais
 
-* Clean Architecture com DI, tratamento global de exceções e padrão Repository.
+* Clean Architecture, DI, exception handler global e Repository pattern.
 * Oracle (relacional) + MongoDB (auditoria NoSQL).
-* Consultas com paginação/ordenação/filtros e HATEOAS (`_links`).
-* Autenticação via JWT Bearer (sem ASP.NET Identity).
-* Cobertura Domain/Application: use o relatório dos **UnitTests** (~92%).
-
-
+* Consultas com paginação, ordenação, filtros e HATEOAS (`_links`).
+* Autenticação JWT Bearer (sem ASP.NET Identity).
+* Swagger UI + OpenAPI JSON em `/swagger` e `/swagger/v1/swagger.json`.
+* Cobertura Domain/Application ~92% (UnitTests + Coverlet).
